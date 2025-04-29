@@ -1,4 +1,4 @@
-# TaskManager  此專案仍在開發中
+# TaskManager  此專案仍在開發中 Still under development.
 TaskManager 是一個任務管理系統，讓用戶可以註冊、登入並管理個人任務
 
 它支援創建、查看、更新、刪除任務，並使用 RESTful API 讓用戶可以輕鬆操作
