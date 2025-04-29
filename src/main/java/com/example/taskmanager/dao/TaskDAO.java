@@ -1,0 +1,21 @@
+package com.example.taskmanager.dao;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+
+import com.example.taskmanager.entity.Task;
+
+@Mapper
+public interface TaskDAO {
+
+	int insertTask(Task task);
+
+	Task getTaskById(Long id);
+
+	List<Task> getAllTasks();
+
+	int updateTask(Task task);
+
+	int deleteTask(Long id);
+}
