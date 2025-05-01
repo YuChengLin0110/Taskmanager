@@ -7,7 +7,7 @@ import com.example.taskmanager.entity.User;
 
 public interface UserService {
 
-	User insertUser(User user);
+	Optional<User> insertUser(User user);
 
 	Optional<User> findById(Long id);
 
@@ -18,4 +18,6 @@ public interface UserService {
 	Optional<User> updateUser(Long id, User user);
 
 	boolean deleteUser(Long id);
+	
+	Optional<String> login(User user);
 }

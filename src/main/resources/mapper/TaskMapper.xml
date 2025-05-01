@@ -6,17 +6,27 @@
 	<insert id="insertTask"
 		parameterType="com.example.taskmanager.entity.Task"
 		useGeneratedKeys="true">
-		INSERT INTO task (title, description, status, created_at, updated_at)
-		VALUES (#{title}, #{description}, #{status}, #{createdTime}, #{updatedTime})
+		INSERT INTO task (title, description, status, created_Time, updated_Time, user_id)
+		VALUES (#{title}, #{description}, #{status}, #{createdTime}, #{updatedTime}, #{userId})
 	</insert>
 
 	<select id="getTaskById" parameterType="long"
-		resultMap="com.example.taskmanager.entity.Task">
+		resultType="com.example.taskmanager.entity.Task">
 		SELECT * FROM task WHERE id = #{id}
 	</select>
 
-	<select id="getAllTasks" resultMap="com.example.taskmanager.entity.Task">
+	<select id="getAllTasks" resultType="com.example.taskmanager.entity.Task">
 		SELECT * FROM task
+	</select>
+	
+	<select id="getTasksByUserId" resultType="com.example.taskmanager.entity.Task">
+		SELECT * FROM task WHERE user_id = #{userId}
+	</select>
+	
+	<select id="getTasksByUsername" resultType="com.example.taskmanager.entity.Task">
+		SELECT t.*
+		FROM task t JOIN user u on t.user_id = u.id
+		WHERE u.username = #{username}
 	</select>
 
 	<update id="updateTask"
@@ -26,11 +36,11 @@
 		description = #{description},
 		status = #{status},
 		updated_at = #{updatedTime}
-		WHERE id = #{id}
+		WHERE id = #{id} AND user_id = #{userId}
 	</update>
 
 	<delete id="deleteTask" parameterType="long">
-		DELETE FROM task WHERE id = #{id}
+		DELETE FROM task WHERE id = #{id} AND user_id = #{userId}
 	</delete>
 
 </mapper>

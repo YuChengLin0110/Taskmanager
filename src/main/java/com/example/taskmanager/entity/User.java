@@ -1,6 +1,8 @@
 package com.example.taskmanager.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -16,13 +18,14 @@ public class User {
 	private String username;
 	private String password;
 	private String email;
-	private String roles;
+	
+	@Enumerated(EnumType.STRING)
+	private RoleEnum roles;
 
 	public User() {
 	}
 
-	public User(Long id, String username, String password, String email, String roles) {
-		this.id = id;
+	public User(String username, String password, String email, RoleEnum roles) {
 		this.username = username;
 		this.password = password;
 		this.email = email;
@@ -61,11 +64,11 @@ public class User {
 		this.email = email;
 	}
 
-	public String getRoles() {
+	public RoleEnum getRoles() {
 		return roles;
 	}
 
-	public void setRoles(String roles) {
+	public void setRoles(RoleEnum roles) {
 		this.roles = roles;
 	}
 }

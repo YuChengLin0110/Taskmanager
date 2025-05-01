@@ -58,9 +58,14 @@ public class UserController {
 	}
 
 	@PostMapping
-	public ResponseEntity<User> createUser(@RequestBody User user) {
-		userService.insertUser(user);
-		return ResponseEntity.status(HttpStatus.CREATED).body(user);
+	public ResponseEntity<?> createUser(@RequestBody User user) {
+		Optional<User> userOpt = userService.insertUser(user);
+		
+		if(userOpt.isPresent()) {
+			return ResponseEntity.status(HttpStatus.CREATED).body(user);
+		}else {
+			return ResponseEntity.badRequest().body("Username is already exist");
+		}
 	}
 
 	@PutMapping("/{id}")

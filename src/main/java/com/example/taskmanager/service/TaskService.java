@@ -7,13 +7,15 @@ import com.example.taskmanager.entity.Task;
 
 public interface TaskService {
 
-	Task insertTask(Task task);
+	Optional<Task> insertTask(Task task, String username);
 
 	Optional<Task> getTaskById(Long id);
 
 	List<Task> getAllTasks();
 
-	Optional<Task> updateTask(Long id, Task task);
+	Optional<Task> updateTask(Long id, Task task, Long userId);
 
-	boolean deleteTask(Long id);
+	boolean deleteTask(Long id, Long userId);
+	
+	List<Task> getTasksByUsername(String username);
 }

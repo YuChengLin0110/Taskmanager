@@ -18,4 +18,8 @@ public interface TaskDAO {
 	int updateTask(Task task);
 
 	int deleteTask(Long id);
+	
+	List<Task> getTasksByUserId(Long userId);
+	
+	List<Task> getTasksByUserName(String username);
 }
