@@ -1,15 +1,10 @@
 package com.example.taskmanager.entity;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+public class UpdateUserRequestDTO {
 
-public class LoginRequestDTO {
-	
-	@NotNull
 	private String username;
-	
-	@Size(min = 6, max = 20)
 	private String password;
+	private String email;
 
 	public String getUsername() {
 		return username;
@@ -27,4 +22,11 @@ public class LoginRequestDTO {
 		this.password = password;
 	}
 
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
 }

@@ -1,5 +1,6 @@
 package com.example.taskmanager.service.impl;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -59,6 +60,8 @@ public class TaskServiceImpl implements TaskService {
 		
 		if(existingTask.isPresent() && existingTask.get().getUserId().equals(userId)) {
 			task.setId(id);
+			task.setUpdatedTime(LocalDateTime.now());
+			
 			int updated = taskDAO.updateTask(task);
 			
 			return updated > 0 ? Optional.of(task) : Optional.empty();

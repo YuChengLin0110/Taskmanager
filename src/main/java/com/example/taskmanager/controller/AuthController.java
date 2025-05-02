@@ -10,11 +10,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.taskmanager.entity.ApiResponse;
 import com.example.taskmanager.entity.LoginRequestDTO;
 import com.example.taskmanager.entity.RegisterRequestDTO;
 import com.example.taskmanager.entity.User;
+import com.example.taskmanager.entity.UserResponseDTO;
 import com.example.taskmanager.mapper.UserMapper;
 import com.example.taskmanager.service.UserService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/auth")
@@ -30,28 +34,33 @@ public class AuthController {
 	}
 
 	@PostMapping("/register")
-	public ResponseEntity<String> register(@RequestBody RegisterRequestDTO registerRequestDTO) {
-		User user = userMapper.RegisterRequestToUser(registerRequestDTO);
+	public ResponseEntity<ApiResponse<UserResponseDTO>> register(@RequestBody @Valid RegisterRequestDTO registerRequestDTO) {
+		User user = userMapper.registerRequestToUser(registerRequestDTO);
 		Optional<User> userOpt = userService.insertUser(user);
 
-		if (!userOpt.isPresent()) {
-			return ResponseEntity.badRequest().body("Username is already exist");
+		if (userOpt.isEmpty()) {
+			return ResponseEntity.badRequest().body(ApiResponse.fail("Username is already exist"));
 		} else {
-			return ResponseEntity.status(HttpStatus.CREATED).body("User created successfully");
+			UserResponseDTO userResp = userMapper.userToUserResponse(userOpt.get());
+
+			return ResponseEntity.status(HttpStatus.CREATED)
+					.body(ApiResponse.success("User created successfully", userResp));
 		}
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<String> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+	public ResponseEntity<ApiResponse<String>> login(@RequestBody @Valid LoginRequestDTO loginRequestDTO) {
 
 		User user = userMapper.loginRequestToUser(loginRequestDTO);
 
 		Optional<String> tokenOpt = userService.login(user);
 
 		if (tokenOpt.isPresent()) {
-			return ResponseEntity.ok(tokenOpt.get());
+
+			return ResponseEntity.ok(ApiResponse.success(tokenOpt.get()));
 		} else {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.fail("User not found"));
 		}
 	}
 }

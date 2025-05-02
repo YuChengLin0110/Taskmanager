@@ -62,7 +62,7 @@ public class UserServiceImpl implements UserService{
     	
         Optional<User> existingUser = findById(user.getId());
         
-        if (!existingUser.isPresent()) {
+        if (existingUser.isEmpty()) {
             return Optional.empty();
         }
         

@@ -15,80 +15,103 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.taskmanager.entity.ApiResponse;
+import com.example.taskmanager.entity.RegisterRequestDTO;
+import com.example.taskmanager.entity.UpdateUserRequestDTO;
 import com.example.taskmanager.entity.User;
+import com.example.taskmanager.entity.UserResponseDTO;
+import com.example.taskmanager.mapper.UserMapper;
 import com.example.taskmanager.service.UserService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
 	private final UserService userService;
+	private final UserMapper userMapper;
 
 	@Autowired
-	public UserController(UserService userService) {
+	public UserController(UserService userService, UserMapper userMapper) {
 		this.userService = userService;
+		this.userMapper = userMapper;
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<User> getUserById(@PathVariable Long id) {
-		Optional<User> user = userService.findById(id);
+	public ResponseEntity<ApiResponse<UserResponseDTO>> getUserById(@PathVariable Long id) {
+		Optional<User> userOpt = userService.findById(id);
 
-		if (user.isPresent()) {
-			return ResponseEntity.ok(user.get());
+		if (userOpt.isPresent()) {
+			UserResponseDTO userResp = getUserRespDTO(userOpt.get());
+			return ResponseEntity.ok(ApiResponse.success(userResp));
 		} else {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.fail("User not found"));
 		}
 	}
 
-	@GetMapping("/{username}")
-	public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
-		Optional<User> user = userService.findByUsername(username);
+	@GetMapping("/username/{username}")
+	public ResponseEntity<ApiResponse<UserResponseDTO>> getUserByUsername(@PathVariable String username) {
+		Optional<User> userOpt = userService.findByUsername(username);
 
-		if (user.isPresent()) {
-			return ResponseEntity.ok(user.get());
+		if (userOpt.isPresent()) {
+			UserResponseDTO userResp = getUserRespDTO(userOpt.get());
+			
+			return ResponseEntity.ok(ApiResponse.success(userResp));
 		} else {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.fail("User not found"));
 		}
 	}
 
 	@GetMapping
-	public ResponseEntity<List<User>> getAllUsers() {
+	public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getAllUsers() {
 		List<User> users = userService.findAllUsers();
-		return ResponseEntity.ok(users); // 直接回傳所有用戶
+		
+		List<UserResponseDTO> userResps = userMapper.UserToUserResponse(users);
+		
+		return ResponseEntity.ok(ApiResponse.success(userResps));
 	}
 
 	@PostMapping
-	public ResponseEntity<?> createUser(@RequestBody User user) {
+	public ResponseEntity<ApiResponse<UserResponseDTO>> createUser(@RequestBody @Valid RegisterRequestDTO userReq) {
+		User user = userMapper.registerRequestToUser(userReq);
 		Optional<User> userOpt = userService.insertUser(user);
-		
-		if(userOpt.isPresent()) {
-			return ResponseEntity.status(HttpStatus.CREATED).body(user);
-		}else {
-			return ResponseEntity.badRequest().body("Username is already exist");
+
+		if (userOpt.isPresent()) {
+			UserResponseDTO userResp = getUserRespDTO(userOpt.get());
+			
+			return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(userResp));
+		} else {
+			return ResponseEntity.badRequest().body(ApiResponse.fail("Username already exists"));
 		}
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
+	public ResponseEntity<ApiResponse<UserResponseDTO>> updateUser(@PathVariable Long id, @RequestBody UpdateUserRequestDTO userReq) {
+		User user = userMapper.updateRequestToUser(userReq);
+		Optional<User> userOpt = userService.updateUser(id, user);
 
-		Optional<User> updatedUser = userService.updateUser(id, user);
-
-		if (updatedUser.isPresent()) {
-			return ResponseEntity.ok(updatedUser.get());
+		if (userOpt.isPresent()) {
+			UserResponseDTO userResp = getUserRespDTO(userOpt.get());
+			
+			return ResponseEntity.ok(ApiResponse.success(userResp));
 		} else {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.fail("User not found"));
 		}
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+	public ResponseEntity<ApiResponse<String>> deleteUser(@PathVariable Long id) {
 		boolean deleted = userService.deleteUser(id);
 
 		if (deleted) {
-			return ResponseEntity.noContent().build();
+			return ResponseEntity.ok(ApiResponse.success("Successfully deleted"));
 		} else {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiResponse.fail("User not found"));
 		}
 	}
-
+	
+	private UserResponseDTO getUserRespDTO(User user) {
+		return userMapper.userToUserResponse(user);
+	}
 }

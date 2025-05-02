@@ -26,8 +26,17 @@
 	<update id="updateUser"
 		parameterType="com.example.taskmanager.entity.User">
 		UPDATE users
-		SET username = #{username}, password = #{password}, email = #{email},
-		roles = #{roles}
+		<set>
+			<if test="username != null and username != ''">
+				username = #{username},
+			</if>
+			<if test="password != null and password != ''">
+				password = #{password},
+			</if>
+			<if test="email != null and email != ''">
+				email = #{email}
+			</if>
+		</set>
 		WHERE id = #{id}
 	</update>
 
