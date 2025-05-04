@@ -45,6 +45,12 @@
 		</set>
 		WHERE id = #{id} AND user_id = #{userId}
 	</update>
+	
+	<update id="updateTaskStatus" parameterType="com.example.taskmanager.entity.TaskUpdateStatusDTO">
+		UPDATE task
+		SET status = #{status}
+		WHERE id = #{id}
+	</update>
 
 	<delete id="deleteTask" parameterType="long">
 		DELETE FROM task WHERE id = #{id} AND user_id = #{userId}

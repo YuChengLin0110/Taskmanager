@@ -37,7 +37,7 @@ public class SecurityConfig {
 		        .anyRequest().authenticated() // 其餘的路徑都需要認證
 		    )
 		    .anonymous(anonymous -> anonymous.disable()) // 關閉匿名使用者功能（沒有登入的直接拒絕，不給匿名身分）
-		    // 若沒有登入就打 API，自訂回傳 401 Unauthorized
+		    // 若沒有登入就打 API，回傳 401 Unauthorized
 		    .exceptionHandling(exception -> 
 		                            exception.authenticationEntryPoint((request, response, authException) -> {
 		                            	response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");

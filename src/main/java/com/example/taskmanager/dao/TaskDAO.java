@@ -5,6 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.example.taskmanager.entity.Task;
+import com.example.taskmanager.entity.TaskStatusEnum;
 
 @Mapper
 public interface TaskDAO {
@@ -22,4 +23,6 @@ public interface TaskDAO {
 	List<Task> getTasksByUserId(Long userId);
 	
 	List<Task> getTasksByUserName(String username);
+	
+	int updateTaskStatus(Long id, TaskStatusEnum status);
 }

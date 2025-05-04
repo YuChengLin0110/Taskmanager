@@ -1,13 +1,13 @@
 package com.example.taskmanager.entity;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
 public class TaskRequestDTO {
 	
-	@NotNull
+	@NotBlank
 	private String title;
 	
-	@NotNull
+	@NotBlank
 	private String description;
 
 	public String getTitle() {

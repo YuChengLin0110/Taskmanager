@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.example.taskmanager.entity.Task;
+import com.example.taskmanager.entity.TaskStatusEnum;
 
 public interface TaskService {
 
@@ -18,4 +19,6 @@ public interface TaskService {
 	boolean deleteTask(Long id, Long userId);
 	
 	List<Task> getTasksByUsername(String username);
+	
+	boolean updateTaskStatus(Long id, TaskStatusEnum status);
 }

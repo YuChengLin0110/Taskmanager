@@ -1,13 +1,14 @@
 package com.example.taskmanager.entity;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public class LoginRequestDTO {
-	
-	@NotNull
+
+	@NotBlank
 	private String username;
-	
+
+	@NotBlank
 	@Size(min = 6, max = 20)
 	private String password;
 

@@ -40,7 +40,7 @@ public class JWTUtils {
 		return Jwts.builder()
 				.setSubject(username)
 				.setIssuedAt(new Date())
-				.setExpiration(new Date(System.currentTimeMillis() + 86400000))
+				.setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 Day
 				.signWith(signKey)
 				.compact();
 	}
