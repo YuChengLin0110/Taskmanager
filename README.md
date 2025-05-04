@@ -17,3 +17,7 @@ MyBatis：資料庫操作框架，使用 XML 文件進行 SQL 查詢
 Swagger/OpenAPI：生成 API 文檔，方便開發者了解和測試 API
 
 BCrypt：密碼加密，保證用戶密碼的安全
+
+Redis：緩存方案，減少資料庫查詢
+
+RabbitMQ：消息隊列，用於異步處理、消息傳遞
