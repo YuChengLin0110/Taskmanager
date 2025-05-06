@@ -8,8 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.taskmanager.dao.UserDAO;
-import com.example.taskmanager.entity.RoleEnum;
 import com.example.taskmanager.entity.User;
+import com.example.taskmanager.entity.enums.RoleEnum;
 import com.example.taskmanager.service.UserService;
 import com.example.taskmanager.utils.JWTUtils;
 
@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService{
 		}
 		
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(RoleEnum.USER);
+        user.setRoles(RoleEnum.USER.name());
 		
         return userDAO.insertUser(user) > 0 ? Optional.of(user) : Optional.empty();
     }

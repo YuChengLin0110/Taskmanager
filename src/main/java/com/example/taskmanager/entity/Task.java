@@ -10,6 +10,25 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+/**
+ * 本類別使用 JPA 註解（@Entity、@Table、@Id、@GeneratedValue）僅作為 自動建表 用途
+ * 搭配 Spring Boot 設定 spring.jpa.hibernate.ddl-auto=update/create，自動建立資料表
+ * 
+ * 
+ * @Id 表示該欄位為主鍵（PRIMARY KEY）
+ * @GeneratedValue(strategy = GenerationType.IDENTITY) 表示該主鍵使用資料庫自增
+ * 雖然是 JPA 註解，但這裡只用來幫 Hibernate 建立欄位為 auto_increment
+ * 
+ * MyBatis 操作說明：
+ *  本專案資料操作皆透過 MyBatis（非 JPA Repository）
+ *  如果想在插入資料後自動取得 id （回填至 Java 物件），需在 MyBatis 的 <insert> 中加上：
+ *      useGeneratedKeys="true" keyProperty="id"
+ *  這樣 insert 執行完後， Task 物件的 id 會自動填入資料庫產生的自 id ，方便後續使用
+ * 
+ * JPA 註解：僅限用於建表
+ * MyBatis 操作：負責所有資料 CRUD，回填 id 需設定 useGeneratedKeys
+ */
+
 @Entity
 @Table(name = "task")
 public class Task {
@@ -21,8 +40,7 @@ public class Task {
 	private String title;
 	private String description;
 
-	@Enumerated(EnumType.STRING)
-	private TaskStatusEnum status;
+	private String status;
 
 	private LocalDateTime createdTime;
 	private LocalDateTime updatedTime;
@@ -53,11 +71,11 @@ public class Task {
 		this.description = description;
 	}
 
-	public TaskStatusEnum getStatus() {
+	public String getStatus() {
 		return status;
 	}
 
-	public void setStatus(TaskStatusEnum status) {
+	public void setStatus(String status) {
 		this.status = status;
 	}
 

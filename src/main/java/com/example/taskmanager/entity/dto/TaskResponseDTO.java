@@ -1,6 +1,8 @@
-package com.example.taskmanager.entity;
+package com.example.taskmanager.entity.dto;
 
 import java.time.LocalDateTime;
+
+import com.example.taskmanager.entity.enums.TaskStatusEnum;
 
 public class TaskResponseDTO {
 

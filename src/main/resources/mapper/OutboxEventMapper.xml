@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.taskmanager.dao.OutboxEventDAO">
+
+	<select id="findPendingEvents" resultType="com.example.taskmanager.entity.OutboxEvent">
+		SELECT * FROM outbox_event
+		WHERE status = 'PENDING' AND (next_retry_time IS NULL OR next_retry_time &lt;= NOW())
+		ORDER BY create_time ASC
+		LIMIT #{limit}
+	</select>
+
+	<insert id="insertEvent"
+		parameterType="com.example.taskmanager.entity.OutboxEvent">
+		INSERT INTO outbox_event
+		(event_type, payload, status,
+		create_time, entity_id)
+		VALUES
+		(#{eventType}, #{payload}, #{status},
+		#{createTime}, #{entityId})
+	</insert>
+
+	<update id="markAsSent">
+		UPDATE outbox_event
+		SET
+		status = 'Sent',
+		sent_time = #{sentTime}
+		WHERE id = #{id}
+	</update>
+
+	<update id="markAsFailed"
+		parameterType="com.example.taskmanager.entity.dto.OutboxEventMarkAsFailedDTO">
+		UPDATE outbox_event
+		SET
+		status = 'FAILED',
+		last_error = #{lastError},
+		retry_count = COALESCE(retry_count, 0) +1,
+		next_retry_time = #{nextRetryTime}
+		WHERE id = #{id}
+	</update>
+
+</mapper>

@@ -1,4 +1,4 @@
-package com.example.taskmanager.entity;
+package com.example.taskmanager.entity.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

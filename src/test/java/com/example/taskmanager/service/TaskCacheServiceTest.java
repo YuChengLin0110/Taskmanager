@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import com.example.taskmanager.entity.Task;
-import com.example.taskmanager.entity.TaskStatusEnum;
+import com.example.taskmanager.entity.enums.TaskStatusEnum;
 
 @SpringBootTest
 public class TaskCacheServiceTest {
@@ -27,7 +27,7 @@ public class TaskCacheServiceTest {
 		task.setId(9999999L);
 		task.setTitle("Test Task Cache");
 		task.setDescription("Test Task Cache Desc");
-		task.setStatus(TaskStatusEnum.NEW);
+		task.setStatus(TaskStatusEnum.NEW.name());
 		
 		taskCacheService.setKey(task);
 		
@@ -44,7 +44,7 @@ public class TaskCacheServiceTest {
 		task.setId(9999997L);
 		task.setTitle("Test Task Cache");
 		task.setDescription("Test Task Cache Desc");
-		task.setStatus(TaskStatusEnum.NEW);
+		task.setStatus(TaskStatusEnum.NEW.name());
 		
 		taskCacheService.setKey(task);
 		taskCacheService.deleteKey(task.getId());

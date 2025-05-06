@@ -12,8 +12,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.example.taskmanager.dao.UserDAO;
-import com.example.taskmanager.entity.RegisterRequestDTO;
 import com.example.taskmanager.entity.User;
+import com.example.taskmanager.entity.dto.RegisterRequestDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @AutoConfigureMockMvc // 設定測試環境時自動配置 MockMvc，用於模擬 HTTP 請求

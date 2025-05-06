@@ -55,7 +55,7 @@ public class JWTAuthFilter extends OncePerRequestFilter {
 					User user = userOpt.get();
 					
 					// 建立身份認證對象 (用戶信息, 密碼, 權限列表)
-					Authentication auth = new UsernamePasswordAuthenticationToken(user, null, new ArrayList<>());
+					Authentication auth = new UsernamePasswordAuthenticationToken(username, null, new ArrayList<>());
 					
 					// 設置到 SecurityContextHolder ，這樣 Spring Security 就能識別當前用戶
 					SecurityContextHolder.getContext().setAuthentication(auth);

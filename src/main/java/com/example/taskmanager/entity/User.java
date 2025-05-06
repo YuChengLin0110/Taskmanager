@@ -18,14 +18,12 @@ public class User {
 	private String username;
 	private String password;
 	private String email;
-	
-	@Enumerated(EnumType.STRING)
-	private RoleEnum roles;
+	private String roles;
 
 	public User() {
 	}
 
-	public User(String username, String password, String email, RoleEnum roles) {
+	public User(String username, String password, String email, String roles) {
 		this.username = username;
 		this.password = password;
 		this.email = email;
@@ -64,11 +62,11 @@ public class User {
 		this.email = email;
 	}
 
-	public RoleEnum getRoles() {
+	public String getRoles() {
 		return roles;
 	}
 
-	public void setRoles(RoleEnum roles) {
+	public void setRoles(String roles) {
 		this.roles = roles;
 	}
 }

@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.example.taskmanager.entity.Task;
-import com.example.taskmanager.entity.TaskStatusEnum;
+import com.example.taskmanager.entity.enums.TaskStatusEnum;
 
 @Mapper
 public interface TaskDAO {

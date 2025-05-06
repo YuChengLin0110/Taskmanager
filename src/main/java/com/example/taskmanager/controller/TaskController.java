@@ -19,7 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.taskmanager.entity.ApiResponse;
 import com.example.taskmanager.entity.Task;
-import com.example.taskmanager.entity.TaskResponseDTO;
+import com.example.taskmanager.entity.dto.TaskRequestDTO;
+import com.example.taskmanager.entity.dto.TaskResponseDTO;
 import com.example.taskmanager.mapper.TaskMapper;
 import com.example.taskmanager.service.TaskService;
 import com.example.taskmanager.service.UserService;
@@ -82,7 +83,8 @@ public class TaskController {
 	}
 
 	@PostMapping
-	public ResponseEntity<ApiResponse<TaskResponseDTO>> createTask(@RequestBody Task task, Principal principal) {
+	public ResponseEntity<ApiResponse<TaskResponseDTO>> createTask(@RequestBody TaskRequestDTO taskReqDTO, Principal principal) {
+		Task task = taskMapper.taskRequestToTask(taskReqDTO);
 		Optional<Task> taskOpt = taskService.insertTask(task, principal.getName());
 
 		if (taskOpt.isPresent()) {

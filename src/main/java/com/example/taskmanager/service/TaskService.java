@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.example.taskmanager.entity.Task;
-import com.example.taskmanager.entity.TaskStatusEnum;
+import com.example.taskmanager.entity.enums.TaskStatusEnum;
 
 public interface TaskService {
 

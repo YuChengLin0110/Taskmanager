@@ -1,4 +1,6 @@
-package com.example.taskmanager.entity;
+package com.example.taskmanager.entity.dto;
+
+import com.example.taskmanager.entity.enums.TaskStatusEnum;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

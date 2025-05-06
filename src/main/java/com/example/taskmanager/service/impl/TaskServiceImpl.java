@@ -7,15 +7,20 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.taskmanager.dao.TaskDAO;
+import com.example.taskmanager.entity.OutboxEvent;
 import com.example.taskmanager.entity.Task;
-import com.example.taskmanager.entity.TaskStatusEnum;
 import com.example.taskmanager.entity.User;
-import com.example.taskmanager.producer.TaskMessageProducer;
+import com.example.taskmanager.entity.enums.EventTypeEnum;
+import com.example.taskmanager.entity.enums.TaskStatusEnum;
+import com.example.taskmanager.service.OutboxEventService;
 import com.example.taskmanager.service.TaskCacheService;
 import com.example.taskmanager.service.TaskService;
 import com.example.taskmanager.service.UserService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class TaskServiceImpl implements TaskService {
@@ -23,18 +28,21 @@ public class TaskServiceImpl implements TaskService {
 	private final TaskDAO taskDAO;
 	private final UserService userService;
 	private final TaskCacheService taskCacheService;
-	private final TaskMessageProducer taskMessageProducer;
+	private final OutboxEventService outboxEventService;
+	private final ObjectMapper objectMapper;
 
 	@Autowired
 	public TaskServiceImpl(TaskDAO taskDAO, UserService userService, TaskCacheService taskCacheService,
-			TaskMessageProducer taskMessageProducer) {
+			OutboxEventService outboxEventService, ObjectMapper objectMapper) {
 		this.taskDAO = taskDAO;
 		this.userService = userService;
 		this.taskCacheService = taskCacheService;
-		this.taskMessageProducer = taskMessageProducer;
+		this.outboxEventService = outboxEventService;
+		this.objectMapper = objectMapper;
 	}
 
 	@Override
+	@Transactional // 確保所有操作都成功，不然回滾，保證資料的一致性
 	public Optional<Task> insertTask(Task task, String username) {
 		Optional<User> userOpt = userService.findByUsername(username);
 
@@ -43,13 +51,21 @@ public class TaskServiceImpl implements TaskService {
 		}
 
 		task.setUserId(userOpt.get().getId());
+		task.setStatus(TaskStatusEnum.NEW.name());
 		task.setCreatedTime(LocalDateTime.now());
 		task.setUpdatedTime(LocalDateTime.now());
 
 		int inserted = taskDAO.insertTask(task);
 
 		if (inserted > 0) {
-			taskMessageProducer.send(task);
+
+			try {
+				// 如果插入 Task 成功，創建 Outbox ，之後由 scheduler 處理發送至 MQ ，避免訊息丟失，保證資料的一致性
+				outboxEventService.createEvent(getOutBoxEvent(task));
+			} catch (JsonProcessingException e) {
+				// log紀錄
+				throw new RuntimeException("Failed to serialize task for Outbox Event", e);
+			}
 
 			return Optional.of(task);
 		}
@@ -150,5 +166,15 @@ public class TaskServiceImpl implements TaskService {
 		} catch (RuntimeException e) {
 			// Log 錯誤
 		}
+	}
+
+	private OutboxEvent getOutBoxEvent(Task task) throws JsonProcessingException {
+
+			OutboxEvent event = new OutboxEvent();
+			event.setEntityId(task.getId());
+			event.setPayload(objectMapper.writeValueAsString(task));
+			event.setEventType(EventTypeEnum.TASK_CREATED.name());
+
+			return event;
 	}
 }

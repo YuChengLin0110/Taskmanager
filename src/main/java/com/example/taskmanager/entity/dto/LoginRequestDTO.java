@@ -1,21 +1,16 @@
-package com.example.taskmanager.entity;
+package com.example.taskmanager.entity.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public class RegisterRequestDTO {
-	
+public class LoginRequestDTO {
+
 	@NotBlank
 	private String username;
-	
+
 	@NotBlank
 	@Size(min = 6, max = 20)
 	private String password;
-	
-	@NotBlank
-	@Email
-	private String email;
 
 	public String getUsername() {
 		return username;
@@ -33,11 +28,4 @@ public class RegisterRequestDTO {
 		this.password = password;
 	}
 
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
 }

@@ -5,27 +5,41 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.example.taskmanager.entity.Task;
+import com.example.taskmanager.entity.OutboxEvent;
+import com.example.taskmanager.entity.enums.EventTypeEnum;
 
 @Service
 public class TaskMessageProducer {
-	
+
 	private final AmqpTemplate amqpTemplate;
-	
+
 	@Value("${rabbitmq.exchange}")
 	private String exchange;
-	
-	@Value("${rabbitmq.routingkey}")
-    private String routingkey;
-	
+
+	@Value("${rabbitmq.routingkey.taskCreated}")
+	private String taskCreatedRoutingKey;
+
+	@Value("${rabbitmq.routingkey.taskCompleted}")
+	private String taskCompletedRoutingKey;
+
 	@Autowired
 	public TaskMessageProducer(AmqpTemplate amqpTemplate) {
 		this.amqpTemplate = amqpTemplate;
 	}
-	
-	public void send(Task task) {
-		
-		// 使用 amqpTemplate 發送訊息，會根據 exchange 和 routingkey 發送到 RabbitMQ
-		amqpTemplate.convertAndSend(exchange, routingkey, task);;
+
+	public void send(OutboxEvent event) {
+
+		// 使用 amqpTemplate 發送訊息，會根據 會根據 EventType 選擇正確的 routingkey 發送
+		amqpTemplate.convertAndSend(exchange, getTaskRoutingKey(event), event);
+		;
+	}
+
+	private String getTaskRoutingKey(OutboxEvent event) {
+		EventTypeEnum type = EventTypeEnum.valueOf(event.getEventType());
+		return switch (type) {
+		case TASK_CREATED -> taskCreatedRoutingKey;
+		case TASK_COMPLETED -> taskCompletedRoutingKey;
+		default -> throw new IllegalArgumentException("Unsupported event type: " + event.getEventType());
+		};
 	}
 }

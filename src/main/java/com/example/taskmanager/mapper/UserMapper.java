@@ -4,11 +4,11 @@ import java.util.List;
 
 import org.mapstruct.Mapper;
 
-import com.example.taskmanager.entity.LoginRequestDTO;
-import com.example.taskmanager.entity.RegisterRequestDTO;
-import com.example.taskmanager.entity.UpdateUserRequestDTO;
 import com.example.taskmanager.entity.User;
-import com.example.taskmanager.entity.UserResponseDTO;
+import com.example.taskmanager.entity.dto.LoginRequestDTO;
+import com.example.taskmanager.entity.dto.RegisterRequestDTO;
+import com.example.taskmanager.entity.dto.UpdateUserRequestDTO;
+import com.example.taskmanager.entity.dto.UserResponseDTO;
 
 // componentModel = "spring" 將生成的 Mapper 實現類註冊到 Spring 容器中，方便之後使用
 @Mapper(componentModel = "spring")
