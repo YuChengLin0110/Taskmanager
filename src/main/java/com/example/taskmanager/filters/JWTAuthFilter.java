@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -22,6 +24,8 @@ import jakarta.servlet.http.HttpServletResponse;
 // OncePerRequestFilter 每次請求只執行 1 次
 public class JWTAuthFilter extends OncePerRequestFilter {
 	
+	private static final Logger log = LoggerFactory.getLogger(JWTAuthFilter.class);
+	
 	private final JWTUtils jwtUtils;
 	private final UserService userService;
 	
@@ -35,8 +39,12 @@ public class JWTAuthFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 		
+		String path = request.getRequestURI();
+		
 		// 如果是 /auth/** 路徑，直接跳過JWT驗證
-		if(request.getRequestURI().startsWith("/auth/")) {
+		if(path.startsWith("/auth/")) {
+			log.debug("Skip JWT check for : {}", path);
+			
 			filterChain.doFilter(request, response);
 			return;
 		}
@@ -60,7 +68,8 @@ public class JWTAuthFilter extends OncePerRequestFilter {
 					// 設置到 SecurityContextHolder ，這樣 Spring Security 就能識別當前用戶
 					SecurityContextHolder.getContext().setAuthentication(auth);
 					
-				}	
+					log.info("JWT verified, user '{}' authenticated", username);
+				}
 			}
 		}
 

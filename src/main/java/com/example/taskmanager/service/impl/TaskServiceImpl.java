@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -24,7 +26,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class TaskServiceImpl implements TaskService {
-
+	
+	private static final Logger log = LoggerFactory.getLogger(TaskServiceImpl.class);
 	private final TaskDAO taskDAO;
 	private final UserService userService;
 	private final TaskCacheService taskCacheService;
@@ -47,6 +50,7 @@ public class TaskServiceImpl implements TaskService {
 		Optional<User> userOpt = userService.findByUsername(username);
 
 		if (userOpt.isEmpty()) {
+			log.warn("User not found for username : {}", username);
 			return Optional.empty();
 		}
 
@@ -56,20 +60,22 @@ public class TaskServiceImpl implements TaskService {
 		task.setUpdatedTime(LocalDateTime.now());
 
 		int inserted = taskDAO.insertTask(task);
+		log.debug("Inserted task ? {} | Task : {}", inserted > 0, task);
 
 		if (inserted > 0) {
 
 			try {
 				// 如果插入 Task 成功，創建 Outbox ，之後由 scheduler 處理發送至 MQ ，避免訊息丟失，保證資料的一致性
 				outboxEventService.createEvent(getOutBoxEvent(task));
-			} catch (JsonProcessingException e) {
-				// log紀錄
+				log.info("Created outboxEvent for task id : {}", task.getId());
+			} catch (Exception e) {
+				log.error("Failed to create outboxEvent for task id : {}", task.getId(), e);
 				throw new RuntimeException("Failed to serialize task for Outbox Event", e);
 			}
 
 			return Optional.of(task);
 		}
-
+		log.warn("Failed to insert task : {}", task);
 		return Optional.empty();
 	}
 
@@ -168,13 +174,16 @@ public class TaskServiceImpl implements TaskService {
 		}
 	}
 
-	private OutboxEvent getOutBoxEvent(Task task) throws JsonProcessingException {
-
+	private OutboxEvent getOutBoxEvent(Task task) {
+		try {
 			OutboxEvent event = new OutboxEvent();
 			event.setEntityId(task.getId());
 			event.setPayload(objectMapper.writeValueAsString(task));
 			event.setEventType(EventTypeEnum.TASK_CREATED.name());
-
 			return event;
+		}catch (JsonProcessingException e){
+			log.error("Failed to convert task to JSON for outboxEvent: {}", task, e);
+			throw new RuntimeException("JSON serialize error", e);
+		}
 	}
 }

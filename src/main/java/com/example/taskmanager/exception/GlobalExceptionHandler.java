@@ -2,6 +2,8 @@ package com.example.taskmanager.exception;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,9 +16,11 @@ import com.example.taskmanager.entity.ApiResponse;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	
+	private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+	
 	@ExceptionHandler(RuntimeException.class)
 	public ResponseEntity<ApiResponse<?>> handleRuntime(RuntimeException e) {
-		
+		log.error("RuntimeException : ", e);
 		// HTTP 500 伺服器內部錯誤
 		return ResponseEntity.internalServerError().body(ApiResponse.fail("Server error : " + e.getMessage()));
 	}
@@ -33,6 +37,8 @@ public class GlobalExceptionHandler {
 	 * */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ApiResponse<?>> handleValidation(MethodArgumentNotValidException e){
+		log.warn("Validation error: {}", e.getMessage());
+		
 		StringBuilder errorMsg = new StringBuilder();
 		errorMsg.append("Validation error ");
 		
@@ -53,7 +59,7 @@ public class GlobalExceptionHandler {
 	// 處理所有未處理的通用異常
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ApiResponse<?>> handleGeneric(Exception e){
-		
+		log.error("Exception: ", e);
 		// HTTP 500 伺服器內部錯誤
 		return ResponseEntity.internalServerError().body(ApiResponse.fail("Error : " + e.getMessage()));
 	}

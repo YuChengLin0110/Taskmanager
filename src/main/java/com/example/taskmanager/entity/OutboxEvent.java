@@ -115,4 +115,20 @@ public class OutboxEvent {
 	public void setNextRetryTime(LocalDateTime nextRetryTime) {
 		this.nextRetryTime = nextRetryTime;
 	}
+	
+	@Override
+	public String toString() {
+	    return "ClassName{" +
+	            "id=" + id +
+	            ", eventType='" + eventType +
+	            ", payload='" + payload +
+	            ", status='" + status +
+	            ", createTime=" + createTime +
+	            ", sentTime=" + sentTime +
+	            ", retryCount=" + retryCount +
+	            ", lastError='" + lastError +
+	            ", entityId=" + entityId +
+	            ", nextRetryTime=" + nextRetryTime +
+	            '}';
+	}
 }

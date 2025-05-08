@@ -2,6 +2,8 @@ package com.example.taskmanager.service.impl;
 
 import java.time.Duration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class TaskCacheServiceImpl implements TaskCacheService {
+	
+	private static final Logger log = LoggerFactory.getLogger(TaskCacheServiceImpl.class);
 
 	private final StringRedisTemplate redisTemplate;
 	private final ObjectMapper objectMapper;
@@ -41,6 +45,7 @@ public class TaskCacheServiceImpl implements TaskCacheService {
 			return task;
 
 		} catch (JsonProcessingException e) {
+			log.error("Failed to parse cached task JSON for Json : {}",json, e);
 			throw new RuntimeException("Failed to parse cached task JSON", e);
 		}
 	}
@@ -53,6 +58,7 @@ public class TaskCacheServiceImpl implements TaskCacheService {
 			
 			redisTemplate.opsForValue().set(key, json, CACHE_TTL);;
 		} catch (JsonProcessingException e) {
+			log.error("Failed to serialize task to JSON for Task : {}", task, e);
 			throw new RuntimeException("Failed to serialize task to JSON", e);
 		}
 	}

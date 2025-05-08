@@ -1,5 +1,7 @@
 package com.example.taskmanager.producer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,6 +12,8 @@ import com.example.taskmanager.entity.enums.EventTypeEnum;
 
 @Service
 public class TaskMessageProducer {
+	
+	private static final Logger log = LoggerFactory.getLogger(TaskMessageProducer.class);
 
 	private final AmqpTemplate amqpTemplate;
 
@@ -28,10 +32,10 @@ public class TaskMessageProducer {
 	}
 
 	public void send(OutboxEvent event) {
-
+		log.info("Sending message: {} to exchange: {} with routing key: {}", event, exchange, getTaskRoutingKey(event));
 		// 使用 amqpTemplate 發送訊息，會根據 會根據 EventType 選擇正確的 routingkey 發送
 		amqpTemplate.convertAndSend(exchange, getTaskRoutingKey(event), event);
-		;
+		log.info("Message sent: {}", event);
 	}
 
 	private String getTaskRoutingKey(OutboxEvent event) {

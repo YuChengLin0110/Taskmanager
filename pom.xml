@@ -154,6 +154,12 @@
 			<version>1.6.3</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<!-- Spring Boot 預設有整合 Logback 所以只需要引入 slf4j -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
 
 	</dependencies>
 	<build>
