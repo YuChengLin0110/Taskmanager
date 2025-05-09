@@ -14,4 +14,6 @@ public interface OutboxEventService {
 	void markAsSent(Long id);
 
 	void markAsFailed(OutboxEventMarkAsFailedDTO dto);
+	
+	void markAsDead(OutboxEvent enent);
 }

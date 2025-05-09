@@ -38,5 +38,13 @@
 		next_retry_time = #{nextRetryTime}
 		WHERE id = #{id}
 	</update>
+	
+	<update id="markAsDead"
+		parameterType="com.example.taskmanager.entity.OutboxEvent">
+		UPDATE outbox_event
+		SET
+		status = 'DEAD'
+		WHERE id = #{id}
+	</update>
 
 </mapper>

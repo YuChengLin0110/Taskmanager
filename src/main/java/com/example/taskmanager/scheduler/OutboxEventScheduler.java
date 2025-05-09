@@ -6,11 +6,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.example.taskmanager.entity.OutboxEvent;
 import com.example.taskmanager.entity.dto.OutboxEventMarkAsFailedDTO;
+import com.example.taskmanager.entity.enums.EventStatusEnum;
 import com.example.taskmanager.producer.TaskMessageProducer;
 import com.example.taskmanager.service.OutboxEventService;
 
@@ -21,6 +23,9 @@ public class OutboxEventScheduler {
 	
 	private final OutboxEventService outboxEventService;
 	private final TaskMessageProducer taskMessageProducer;
+	
+	@Value("${rabbitmq.retry.max}")
+	private int RETRY_MAX;
 	
 	@Autowired
 	public OutboxEventScheduler (OutboxEventService outboxEventService, TaskMessageProducer taskMessageProducer) {
@@ -44,8 +49,15 @@ public class OutboxEventScheduler {
 				OutboxEventMarkAsFailedDTO dto = new OutboxEventMarkAsFailedDTO();
 				dto.setId(event.getId());
 				dto.setLastError(e.getMessage());
-				dto.setNextRetryTime(LocalDateTime.now().plusMinutes(1)); // 設定 1 分鐘後再重試
-				outboxEventService.markAsFailed(dto);
+				
+				// 如果重試太多次還是失敗，就標記為 DEAD
+				if(event.getRetryCount() > RETRY_MAX) {
+					event.setStatus(EventStatusEnum.DEAD.name());
+					outboxEventService.markAsDead(event);
+				} else {
+					dto.setNextRetryTime(LocalDateTime.now().plusMinutes(1)); // 設定 1 分鐘後再重試
+					outboxEventService.markAsFailed(dto);
+				}	
 			}
 		}
 	}

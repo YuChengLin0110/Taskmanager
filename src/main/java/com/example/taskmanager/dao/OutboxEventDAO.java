@@ -20,4 +20,6 @@ public interface OutboxEventDAO {
 	void markAsSent(@Param(value = "id") Long id, @Param(value = "sentTime") LocalDateTime sentTime);
 	
 	void markAsFailed(OutboxEventMarkAsFailedDTO dto);
+	
+	void markAsDead(OutboxEvent enent);
 }

@@ -43,7 +43,11 @@ public class OutboxEventServiceImpl implements OutboxEventService{
 	@Override
 	public void markAsFailed(OutboxEventMarkAsFailedDTO dto) {
 		outboxEventDAO.markAsFailed(dto);
-		
 	}
-
+	
+	@Override
+	public void markAsDead(OutboxEvent enent) {
+		outboxEventDAO.markAsDead(enent);
+	}
+	
 }
