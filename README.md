@@ -39,6 +39,11 @@ RabbitMQ：任務的非同步訊息處理
 
 SLF4J + Logback：系統日誌與錯誤追蹤
 
+Docker：建立可重現的開發環境與多服務容器管理
+
+## Docker 支援
+本專案整合 Docker，快速啟動完整開發環境
+
 ## Outbox Pattern 實作
 為確保資料一致性與傳遞，實作了 Outbox Pattern：
 
