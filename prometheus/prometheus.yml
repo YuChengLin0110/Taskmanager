@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'spring-boot-app'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8080']  # Docker 要抓本機執行的 Spring Boot
+
+# 若 Spring Boot 也在 Docker，改成容器名稱：taskmanager-app:8080

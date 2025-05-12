@@ -154,11 +154,23 @@
 			<version>1.6.3</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<!-- Spring Boot 預設有整合 Logback 所以只需要引入 slf4j -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		
+		<!-- 開啟 Spring Boot 的監控功能（/actuator/health、/actuator/metrics 等） -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		
+		<!-- 加這個就能讓 /actuator/prometheus 自動出現，讓 Prometheus 可以抓監控資料 -->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-registry-prometheus</artifactId>
 		</dependency>
 
 	</dependencies>

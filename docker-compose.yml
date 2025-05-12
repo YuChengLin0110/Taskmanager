@@ -1,15 +1,13 @@
-version: '3.8'
-
 services:
   app:
-    build: .	# 用根目錄的 Dockerfile 建 image
+    build: .# 用根目錄的 Dockerfile 建 image
     container_name: taskmanager-app
     ports:
-      - "8080:8080"		# 映射容器的 8080 到本機
+      - "8080:8080"# 映射容器的 8080 到本機
     depends_on:
       - redis
       - rabbitmq
-    environment:		# Spring Boot 連線 Redis 和 RabbitMQ
+    environment:               # Spring Boot 連線 Redis 和 RabbitMQ
       SPRING_REDIS_HOST: redis
       SPRING_REDIS_PORT: "6379"
       SPRING_RABBITMQ_HOST: rabbitmq
@@ -35,6 +33,25 @@ services:
    # volumes:        先註解，不將資料持久化
     #  - rabbitmq-data:/var/lib/rabbitmq
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+   # volumes:
+     # - grafana-storage:/var/lib/grafana
+    depends_on:
+      - prometheus
+
 # volumes:        先註解，不將資料持久化
 #  redis-data:
 #  rabbitmq-data:
+#  grafana-storage:
