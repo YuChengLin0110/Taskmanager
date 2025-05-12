@@ -1,25 +1,51 @@
 # TaskManager  此專案仍在開發中 Still under development.
-TaskManager 是一個任務管理系統，讓用戶可以註冊、登入並管理個人任務
 
-它支援創建、查看、更新、刪除任務，並使用 RESTful API 讓用戶可以輕鬆操作
+TaskManager 是一個簡潔的任務管理系統，使用者可以透過帳號註冊與登入，來創建、追蹤個人任務的處理狀態
 
-此系統的後端使用 Spring Boot，並結合 JWT 用戶身份驗證機制來保護 API
+後端採用 Spring Boot 架構，整合 JWT 驗證、RabbitMQ、Redis 等技術
+
+## 功能特色
+使用者註冊與登入 JWT 驗證
+
+任務 CRUD
+
+任務狀態管理 NEW → PROCESSINGS → DONE
+
+使用 RabbitMQ 傳遞 任務
+
+Outbox Pattern 確保資料與訊息一致性
+
+任務消費者 Consumer 異步處理業務邏輯
+
+具備重試與錯誤記錄機制
+
 
 ## 技術
 Spring Boot：作為主要框架來構建 RESTful API
 
-Spring Security：用戶身份驗證與授權，使用 JWT 進行 Token 驗證
+Spring Security + JWT ：身份驗證與授權
 
 H2 Database：內嵌型資料庫，適合開發階段使用
 
-MyBatis：資料庫操作框架，使用 XML 文件進行 SQL 查詢
+MyBatis：資料庫操作框架，使用 XML 撰寫 SQL
 
 Swagger/OpenAPI：生成 API 文檔，方便開發者了解和測試 API
 
-BCrypt：密碼加密，保證用戶密碼的安全
+BCrypt：使用者密碼加密
 
-Redis：緩存方案，減少資料庫查詢
+Redis：快取與暫存資料
 
-RabbitMQ：消息隊列，用於異步處理、消息傳遞
+RabbitMQ：任務的非同步訊息處理
 
-SLF4J + Logback：用於紀錄系統流程、除錯與問題追蹤
+SLF4J + Logback：系統日誌與錯誤追蹤
+
+## Outbox Pattern 實作
+為確保資料一致性與傳遞，實作了 Outbox Pattern：
+
+當任務被創建時，會一併寫入 OutboxEvent 表
+
+Scheduler 會定期撈取 PENDING 狀態事件並送出至 MQ
+
+成功送出則標記為 SENT，失敗則進行重試或標記為 DEAD
+
+消費者 Consumer 接收 MQ 訊息後執行對應業務邏輯
