@@ -24,5 +24,5 @@ public interface TaskDAO {
 	
 	List<Task> getTasksByUserName(String username);
 	
-	int updateTaskStatus(Long id, TaskStatusEnum status);
+	int updateTaskStatus(Long id, String status);
 }

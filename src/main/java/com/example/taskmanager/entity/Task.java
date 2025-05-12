@@ -2,9 +2,9 @@ package com.example.taskmanager.entity;
 
 import java.time.LocalDateTime;
 
+import com.example.taskmanager.entity.enums.TaskStatusEnum;
+
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -71,12 +71,12 @@ public class Task {
 		this.description = description;
 	}
 
-	public String getStatus() {
-		return status;
+	public TaskStatusEnum getStatus() {
+		return TaskStatusEnum.valueOf(this.status);
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public void setStatus(TaskStatusEnum status) {
+		this.status = status.name();
 	}
 
 	public LocalDateTime getCreatedTime() {

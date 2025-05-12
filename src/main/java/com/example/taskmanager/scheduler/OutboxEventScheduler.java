@@ -33,7 +33,7 @@ public class OutboxEventScheduler {
 		this.taskMessageProducer = taskMessageProducer;
 	}
 	
-	@Scheduled(fixedRate = 5000)  // 每 5 秒執行一次
+	@Scheduled(fixedRate = 60000)  // 執行頻率
 	public void processOutboxEvents() {
 		List<OutboxEvent> pendingEvents = outboxEventService.findPendingEvents(10);
 		
@@ -51,8 +51,8 @@ public class OutboxEventScheduler {
 				dto.setLastError(e.getMessage());
 				
 				// 如果重試太多次還是失敗，就標記為 DEAD
-				if(event.getRetryCount() > RETRY_MAX) {
-					event.setStatus(EventStatusEnum.DEAD.name());
+				if(event.getRetryCount() >= RETRY_MAX) {
+					event.setStatus(EventStatusEnum.DEAD);
 					outboxEventService.markAsDead(event);
 				} else {
 					dto.setNextRetryTime(LocalDateTime.now().plusMinutes(1)); // 設定 1 分鐘後再重試

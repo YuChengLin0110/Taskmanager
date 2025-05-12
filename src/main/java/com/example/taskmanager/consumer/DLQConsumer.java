@@ -12,7 +12,7 @@ public class DLQConsumer {
 	
 	private static final Logger log = LoggerFactory.getLogger(DLQConsumer.class);
 	
-	@RabbitListener(queues = "${rabbitmq.queue.taskDLQ}")
+	@RabbitListener(queues = "${rabbitmq.queue.task.dlq}")
 	public void receiveDLQMessage(OutboxEvent event) {
 		log.warn("Received DLQ Message : {}", event);
 	}

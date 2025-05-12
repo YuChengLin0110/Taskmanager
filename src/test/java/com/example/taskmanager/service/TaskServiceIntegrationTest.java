@@ -55,7 +55,7 @@ public class TaskServiceIntegrationTest {
 		task.setId(999996L);
 		task.setTitle("TestMQTitle");
 		task.setDescription("TestMQDesc");
-		task.setStatus(TaskStatusEnum.NEW.name());
+		task.setStatus(TaskStatusEnum.NEW);
 		String username = "testUser";
 		
 		Optional<Task> inserted = taskService.insertTask(task, username);

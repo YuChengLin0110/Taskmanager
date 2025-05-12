@@ -2,6 +2,11 @@ package com.example.taskmanager.entity;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.generator.EventType;
+
+import com.example.taskmanager.entity.enums.EventStatusEnum;
+import com.example.taskmanager.entity.enums.EventTypeEnum;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -43,13 +48,15 @@ public class OutboxEvent {
 	public void setId(Long id) {
 		this.id = id;
 	}
-
-	public String getEventType() {
-		return eventType;
+	
+	// 將 String 轉為 EventTypeEnum
+	public EventTypeEnum getEventType() {
+		return EventTypeEnum.valueOf(this.eventType);
 	}
-
-	public void setEventType(String eventType) {
-		this.eventType = eventType;
+	
+	// 將 EventTypeEnum 轉為 String
+	public void setEventType(EventTypeEnum eventType) {
+		this.eventType = eventType.name();
 	}
 
 	public String getPayload() {
@@ -60,12 +67,12 @@ public class OutboxEvent {
 		this.payload = payload;
 	}
 
-	public String getStatus() {
-		return status;
+	public EventStatusEnum getStatus() {
+		return EventStatusEnum.valueOf(this.status);
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public void setStatus(EventStatusEnum status) {
+		this.status = status.name();
 	}
 
 	public LocalDateTime getCreateTime() {

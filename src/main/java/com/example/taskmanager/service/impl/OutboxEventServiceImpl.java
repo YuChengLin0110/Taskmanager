@@ -25,7 +25,7 @@ public class OutboxEventServiceImpl implements OutboxEventService{
 	@Override
 	public void createEvent(OutboxEvent event) {
 		event.setCreateTime(LocalDateTime.now());
-		event.setStatus(EventStatusEnum.PENDING.name());
+		event.setStatus(EventStatusEnum.PENDING);
 		outboxEventDAO.insertEvent(event);
 	}
 

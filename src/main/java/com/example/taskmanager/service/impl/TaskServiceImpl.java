@@ -55,7 +55,7 @@ public class TaskServiceImpl implements TaskService {
 		}
 
 		task.setUserId(userOpt.get().getId());
-		task.setStatus(TaskStatusEnum.NEW.name());
+		task.setStatus(TaskStatusEnum.NEW);
 		task.setCreatedTime(LocalDateTime.now());
 		task.setUpdatedTime(LocalDateTime.now());
 
@@ -152,7 +152,8 @@ public class TaskServiceImpl implements TaskService {
 
 	@Override
 	public boolean updateTaskStatus(Long id, TaskStatusEnum status) {
-		int update = taskDAO.updateTaskStatus(id, status);
+		String statusStr = status.name();
+		int update = taskDAO.updateTaskStatus(id, statusStr);
 
 		return update > 0;
 	}
@@ -179,7 +180,7 @@ public class TaskServiceImpl implements TaskService {
 			OutboxEvent event = new OutboxEvent();
 			event.setEntityId(task.getId());
 			event.setPayload(objectMapper.writeValueAsString(task));
-			event.setEventType(EventTypeEnum.TASK_CREATED.name());
+			event.setEventType(EventTypeEnum.TASK_CREATED);
 			return event;
 		}catch (JsonProcessingException e){
 			log.error("Failed to convert task to JSON for outboxEvent: {}", task, e);

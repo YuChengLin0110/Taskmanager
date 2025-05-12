@@ -27,7 +27,7 @@ public class TaskCacheServiceTest {
 		task.setId(9999999L);
 		task.setTitle("Test Task Cache");
 		task.setDescription("Test Task Cache Desc");
-		task.setStatus(TaskStatusEnum.NEW.name());
+		task.setStatus(TaskStatusEnum.NEW);
 		
 		taskCacheService.setKey(task);
 		
@@ -44,7 +44,7 @@ public class TaskCacheServiceTest {
 		task.setId(9999997L);
 		task.setTitle("Test Task Cache");
 		task.setDescription("Test Task Cache Desc");
-		task.setStatus(TaskStatusEnum.NEW.name());
+		task.setStatus(TaskStatusEnum.NEW);
 		
 		taskCacheService.setKey(task);
 		taskCacheService.deleteKey(task.getId());

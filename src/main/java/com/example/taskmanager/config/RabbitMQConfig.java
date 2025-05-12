@@ -23,49 +23,48 @@ public class RabbitMQConfig {
 	@Value("${rabbitmq.exchange}")
 	private String exchange;
 
-	@Value("${rabbitmq.routingkey.taskCreated}")
-	private String taskCreatedroutingKey;
-
-	@Value("${rabbitmq.routingkey.taskCompleted}")
-	private String taskCompletedroutingKey;
-
-	@Value("${rabbitmq.queue.taskCreated}")
-	private String taskCreatedQueueName;
-
-	@Value("${rabbitmq.queue.taskCompleted}")
-	private String taskCompletedQueueName;
-
 	@Value("${rabbitmq.exchange.dlq}")
 	private String dlqExchange;
 
-	@Value("${rabbitmq.routingkey.dlq}")
+	@Value("${rabbitmq.routingkey.task.created}")
+	private String taskCreatedRoutingKey;
+
+	@Value("${rabbitmq.routingkey.task.assigned}")
+	private String taskAssignedRoutingKey;
+
+	@Value("${rabbitmq.routingkey.task.overdue}")
+	private String taskOverdueRoutingKey;
+
+	@Value("${rabbitmq.routingkey.task.dlq}")
 	private String dlqRoutingKey;
-	
-	@Value("${rabbitmq.queue.taskDLQ}")
+
+	@Value("${rabbitmq.queue.task.created}")
+	private String taskCreatedQueueName;
+
+	@Value("${rabbitmq.queue.task.assigned}")
+	private String taskAssignedQueueName;
+
+	@Value("${rabbitmq.queue.task.overdue}")
+	private String taskOverdueQueueName;
+
+	@Value("${rabbitmq.queue.task.dlq}")
 	private String dlqQueueName;
 
 	@Bean
 	public Queue taskCreatedQueue() {
-		// 設定 Dead Letter Queue  參數
-		// 設定當訊息無法處理時，將訊息轉發到死信交換器（DLX）
-		Map<String, Object> args = new HashMap<>();
-		args.put("x-dead-letter-exchange", dlqExchange);
-		args.put("x-dead-letter-routing-key", dlqRoutingKey);
-		
-		// 建立隊列，並設定為持久化（durable = true）， RabbitMQ 重啟，隊列不會丟失
-		// 非專用隊列（exclusive = false），不會自動刪除（autoDelete = false）
-		return new Queue(taskCreatedQueueName, true, false, false, args);
+		return buildQueueWithDLQ(taskCreatedQueueName);
 	}
 
 	@Bean
-	public Queue taskCompletedQueue() {
-		Map<String, Object> args = new HashMap<>();
-		args.put("x-dead-letter-exchange", dlqExchange);
-		args.put("x-dead-letter-routing-key", dlqRoutingKey);
-		
-		return new Queue(taskCompletedQueueName, true, false, false, args);
+	public Queue taskAssignedQueue() {
+		return buildQueueWithDLQ(taskAssignedQueueName);
 	}
-	
+
+	@Bean
+	public Queue taskOverdueQueue() {
+		return buildQueueWithDLQ(taskOverdueQueueName);
+	}
+
 	@Bean
 	public Queue dlqQueue() {
 		return new Queue(dlqQueueName, true);
@@ -93,14 +92,19 @@ public class RabbitMQConfig {
 	// 建立 Binding，把 Queue 綁定到 Exchange，並透過指定的 routing key 做連結
 	@Bean
 	public Binding bindingTaskCreated(Queue taskCreatedQueue, DirectExchange exchange) {
-		return BindingBuilder.bind(taskCreatedQueue).to(exchange).with(taskCreatedroutingKey);
+		return BindingBuilder.bind(taskCreatedQueue).to(exchange).with(taskCreatedRoutingKey);
 	}
 
 	@Bean
-	public Binding bindingTaskCompleted(Queue taskCompletedQueue, DirectExchange exchange) {
-		return BindingBuilder.bind(taskCompletedQueue).to(exchange).with(taskCompletedroutingKey);
+	public Binding bindingTaskAssigned(Queue taskAssignedQueue, DirectExchange exchange) {
+		return BindingBuilder.bind(taskAssignedQueue).to(exchange).with(taskAssignedRoutingKey);
 	}
-	
+
+	@Bean
+	public Binding bindingTaskOverdue(Queue taskOverdueQueue, DirectExchange exchange) {
+		return BindingBuilder.bind(taskOverdueQueue).to(exchange).with(taskOverdueRoutingKey);
+	}
+
 	@Bean
 	public Binding dlqBinding(Queue dlqQueue, DirectExchange dlqExchange) {
 		return BindingBuilder.bind(dlqQueue).to(dlqExchange).with(dlqRoutingKey);
@@ -124,5 +128,14 @@ public class RabbitMQConfig {
 	@Bean
 	public MessageConverter jackson2MessageConverter() {
 		return new Jackson2JsonMessageConverter();
+	}
+	
+	// 建立 Queue 並設置DLQ 的相關配置來處理未成功的訊息
+	private Queue buildQueueWithDLQ(String queueName) {
+		Map<String, Object> args = new HashMap<>();
+		args.put("x-dead-letter-exchange", dlqExchange); // 指定死信交換器
+		args.put("x-dead-letter-routing-key", dlqRoutingKey); // 指定死信路由鍵
+		
+		return new Queue(queueName, true, false, false, args);
 	}
 }

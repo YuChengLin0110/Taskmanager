@@ -1,3 +1,4 @@
+
 package com.example.taskmanager.producer;
 
 import org.slf4j.Logger;
@@ -28,11 +29,15 @@ public class TaskMessageProducer {
 	@Value("${rabbitmq.exchange}")
 	private String exchange;
 
-	@Value("${rabbitmq.routingkey.taskCreated}")
+	@Value("${rabbitmq.routingkey.task.created}")
 	private String taskCreatedRoutingKey;
 
-	@Value("${rabbitmq.routingkey.taskCompleted}")
-	private String taskCompletedRoutingKey;
+	
+	@Value("${rabbitmq.routingkey.task.assigned}")
+	private String taskAssignedRoutingKey;
+	
+	@Value("${rabbitmq.routingkey.task.overdue}")
+	private String taskOverdueRoutingKey;
 
 	@Autowired
 	public TaskMessageProducer(AmqpTemplate amqpTemplate, ObjectMapper objectMapper) {
@@ -63,10 +68,11 @@ public class TaskMessageProducer {
 	}
 
 	private String getTaskRoutingKey(OutboxEvent event) {
-		EventTypeEnum type = EventTypeEnum.valueOf(event.getEventType());
+		EventTypeEnum type = event.getEventType();
 		return switch (type) {
 		case TASK_CREATED -> taskCreatedRoutingKey;
-		case TASK_COMPLETED -> taskCompletedRoutingKey;
+		case TASK_ASSIGNED -> taskAssignedRoutingKey; 
+		case TASK_OVERDUE -> taskOverdueRoutingKey;
 		default -> throw new IllegalArgumentException("Unsupported event type: " + event.getEventType());
 		};
 	}

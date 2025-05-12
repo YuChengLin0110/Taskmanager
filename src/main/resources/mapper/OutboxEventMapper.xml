@@ -5,7 +5,7 @@
 
 	<select id="findPendingEvents" resultType="com.example.taskmanager.entity.OutboxEvent">
 		SELECT * FROM outbox_event
-		WHERE status = 'PENDING' AND (next_retry_time IS NULL OR next_retry_time &lt;= NOW())
+		WHERE status IN ('PENDING', 'FAILED') AND (next_retry_time IS NULL OR next_retry_time &lt;= NOW())
 		ORDER BY create_time ASC
 		LIMIT #{limit}
 	</select>
@@ -23,7 +23,7 @@
 	<update id="markAsSent">
 		UPDATE outbox_event
 		SET
-		status = 'Sent',
+		status = 'SENT',
 		sent_time = #{sentTime}
 		WHERE id = #{id}
 	</update>
