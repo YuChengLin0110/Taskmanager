@@ -19,6 +19,8 @@ Outbox Pattern 確保資料與訊息一致性
 
 具備重試與錯誤記錄機制
 
+使用 Redis 實作分布式鎖，確保只有一個 Scheduler 執行任務，並結合 Watchdog 自動續期機制來維持鎖
+
 
 ## 技術
 Spring Boot：作為主要框架來構建 RESTful API
@@ -54,3 +56,12 @@ Scheduler 會定期撈取 PENDING 狀態事件並送出至 MQ
 成功送出則標記為 SENT，失敗則進行重試或標記為 DEAD
 
 消費者 Consumer 接收 MQ 訊息後執行對應業務邏輯
+
+## 分布式鎖與 Watchdog 機制
+為確保 OutboxEventScheduler 只會在單一實例上執行，並避免過期鎖造成重複執行，使用了 Redis 分布式鎖並結合 Watchdog 續期機制：
+
+Redis 鎖：確保 Scheduler 只有成功獲得鎖的實例可以執行任務
+
+Watchdog：在任務執行過程中持續續期鎖，防止鎖過期，確保任務執行不會中斷
+
+
