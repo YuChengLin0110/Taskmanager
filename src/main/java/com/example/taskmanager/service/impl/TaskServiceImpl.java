@@ -162,7 +162,7 @@ public class TaskServiceImpl implements TaskService {
 		try {
 			return taskCacheService.getTaskById(id);
 		} catch (RuntimeException e) {
-			// Log 錯誤，並返回 null
+			log.error("Failed to get Task to cache for Task Id :{} ",id, e);
 			return null;
 		}
 	}
@@ -171,7 +171,7 @@ public class TaskServiceImpl implements TaskService {
 		try {
 			taskCacheService.setKey(task);
 		} catch (RuntimeException e) {
-			// Log 錯誤
+			log.error("Failed to set Task to cache for Task :{} ",task, e);
 		}
 	}
 
