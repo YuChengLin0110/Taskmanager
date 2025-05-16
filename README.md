@@ -97,7 +97,7 @@ Watchdog：在任務執行過程中持續續期鎖，防止鎖過期，確保任
 
 │   └── Dockerfile
 
-請在專案根目錄下建立 .env 檔案， 可參考 env.example
+請在專案根目錄下建立 .env 檔案， 可參考 .env.example
 
 ### 建置 jar 檔案
 請先在本地建置好 taskmanager 與 config-server 的 jar 檔案
