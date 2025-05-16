@@ -40,3 +40,6 @@ build/
 .metadata/
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+
+### 機密類型的資訊 ###
+/deploy/.env

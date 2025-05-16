@@ -9,6 +9,8 @@ public class RedisLockWatchdog implements Runnable{
 	private final String key;
 	private final String value;
 	private final long expireMillis;
+	// volatile 是讓不同執行緒都能馬上看到這個變數最新的狀態
+	// 這樣寫能確保別的執行緒改了 running，大家都會立刻知道
 	private volatile boolean running = true;
 	
 	public RedisLockWatchdog(StringRedisTemplate redisTemplate, String key, String value, long expireMillis) {

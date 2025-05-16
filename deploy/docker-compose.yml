@@ -1,0 +1,81 @@
+services:
+  taskmanager-config-server:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"] # 用 curl 確認服務健康狀況
+      interval: 3s # 每幾秒檢查一次
+      timeout: 2s # 最多等幾秒沒回應就判定失敗
+      retries: 5 # 失敗重試次數
+    build:
+      context: ../../TaskmanagerConfigServer # 建置時，Dockerfile 所在的目錄，以 docker-compose 的位置當基準
+      dockerfile: Dockerfile # 指定要用的 Dockerfile
+    image: config-server
+    container_name: ConfigServer
+    ports:
+      - "8888:8888"
+  taskmanager:
+    env_file:
+      - .env # 環境變數從 .env 檔讀取
+    build: 
+      context: ../../Taskmanager
+      dockerfile: Dockerfile
+    image: taskmanager
+    container_name: TaskmanagerApp
+    ports:
+      - "8080:8080" # 映射容器的 8080 到本機
+    depends_on:
+      redis:
+        condition: service_started # 這個服務要等 redis 啟動完成才會啟動
+      rabbitmq:
+        condition: service_started
+      taskmanager-config-server:
+        condition: service_healthy # 這個服務要等 config server 健康檢查通過才會啟動
+    environment: # 設定要傳進容器內的環境變數
+      SPRING_PROFILES_ACTIVE: prod # 告訴 Spring Boot 啟用哪一組環境設定檔 application-prod.yml
+      SPRING_REDIS_HOST: ${SPRING_REDIS_HOST} # Redis 主機位置，從 .env 取得
+      SPRING_REDIS_PORT: ${SPRING_REDIS_PORT}
+      SPRING_RABBITMQ_HOST: ${SPRING_RABBITMQ_HOST}
+      SPRING_RABBITMQ_PORT: ${SPRING_RABBITMQ_PORT}
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://taskmanager-config-server:8888" # 從 Config Server 匯入設定
+
+  redis:
+    image: redis:7-alpine
+    container_name: taskmanager-redis
+    ports:
+      - "6379:6379"
+   # volumes:        先註解，不將資料持久化
+    #  - redis-data:/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: taskmanager-rabbitmq
+    ports:
+      - "5672:5672"    # RabbitMQ 傳遞消息的 port
+      - "15672:15672"  # 管理介面
+    environment: # 設定要傳進容器內的環境變數
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+   # volumes:        先註解，不將資料持久化
+    #  - rabbitmq-data:/var/lib/rabbitmq
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ../prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+   # volumes:
+     # - grafana-storage:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+# volumes:        先註解，不將資料持久化
+#  redis-data:
+#  rabbitmq-data:
+#  grafana-storage:

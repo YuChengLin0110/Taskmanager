@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.taskmanager.entity.OutboxEvent;
-import com.example.taskmanager.entity.enums.EventStatusEnum;
 import com.example.taskmanager.entity.enums.TaskStatusEnum;
 import com.example.taskmanager.service.TaskService;
 import com.rabbitmq.client.Channel;

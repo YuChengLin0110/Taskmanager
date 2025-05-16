@@ -3,11 +3,12 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	<!-- 繼承 Spring Boot 的 parent pom，包含預設 plugin 設定與依賴版本管理 -->
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>3.4.5</version>
-		<relativePath /> <!-- lookup parent from repository -->
+		<relativePath /> <!-- 不從本地尋找 parent pom -->
 	</parent>
 	<groupId>com.example</groupId>
 	<artifactId>taskmanager</artifactId>
@@ -29,6 +30,7 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<spring-cloud.version>2024.0.1</spring-cloud.version> <!-- Spring Cloud BOM 版本 -->
 	</properties>
 	<dependencies>
 
@@ -172,8 +174,28 @@
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
 		</dependency>
+		
+		<!-- Spring Cloud Config Client -->
+		<dependency>
+    		<groupId>org.springframework.cloud</groupId>
+    		<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
 
 	</dependencies>
+	
+	<!-- Spring Cloud 的 BOM ，統一管理版本避免衝突 -->
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version> <!-- 從 pom.xml 上方的 <properties> 抓設定值 -->
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+	
 	<build>
 		<plugins>
 			<plugin>

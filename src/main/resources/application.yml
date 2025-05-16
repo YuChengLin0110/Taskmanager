@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: taskmanager # 指定這個服務的名字，Config Server 會根據這個名字去找對應的設定檔 ， taskmanager-prod.yml
+  #profiles:
+    #active: dev # dev本機開發環境用這個設定 ， prod 正式環境由docker-compose 控制
+  #config:
+    #import: optional:configserver:http://localhost:8888 # dev本機開發環境用這個設定 ， prod 正式環境由docker-compose 控制
+  cloud:
+    config:
+      retry:
+        max-attempts: 6 # 重試次數
+        initial-interval: 1000 # 重試等待起始時間，單位毫秒
+        multiplier: 1.5 # 重試時間增加倍數
+        max-interval: 5000 # 最大重試等待時間
