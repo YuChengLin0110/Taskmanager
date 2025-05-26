@@ -1,4 +1,4 @@
-# TaskManager  此專案仍在開發中 Still under development.
+# TaskManager
 
 TaskManager 是一個簡潔的任務管理系統
 
@@ -8,6 +8,10 @@ TaskManager 是一個簡潔的任務管理系統
 
 ## 功能特色
 使用者註冊與登入 JWT 驗證
+
+AOP 切面日誌紀錄，使用 Spring AOP 攔截關鍵方法，紀錄方法參數、回傳結果及執行耗時，方便追蹤與除錯
+
+自訂 Annotation 註解觸發操作日誌，透過 AOP 監聽並攔截帶有該註解的方法，自動記錄操作行為
 
 任務 CRUD
 
@@ -33,6 +37,8 @@ Spring Boot：作為主要框架來構建 RESTful API
 Spring Cloud Config：配置管理，支持多環境動態配置更新
 
 Spring Security + JWT ：身份驗證與授權
+
+Spring AOP：攔截切面，監聽特定方法紀錄Log，自訂 @Annotation 註解，搭配 AOP 自動攔截帶有該註解的方法
 
 H2 Database：內嵌型資料庫，適合開發階段使用
 

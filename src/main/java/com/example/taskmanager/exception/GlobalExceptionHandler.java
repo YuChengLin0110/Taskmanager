@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import com.example.taskmanager.entity.ApiResponse;
 
 // 讓這個類別變成一個全域的例外處理器，所有的例外都會進到這裡來處理
+// 目的是統一回傳格式給前端
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 	
