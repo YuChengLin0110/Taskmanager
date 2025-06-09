@@ -43,3 +43,7 @@ build/
 
 ### 機密類型的資訊 ###
 /deploy/.env
+
+### MySQL ###
+/deploy/master-data/
+/deploy/slave-data/

@@ -80,6 +80,7 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public Optional<Task> getTaskById(Long id) {
 		Task cache = getTaskFromCache(id);
 
@@ -100,6 +101,7 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Task> getAllTasks() {
 		return taskDAO.getAllTasks();
 	}
@@ -140,6 +142,7 @@ public class TaskServiceImpl implements TaskService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Task> getTasksByUsername(String username) {
 		Optional<User> userOpt = userService.findByUsername(username);
 

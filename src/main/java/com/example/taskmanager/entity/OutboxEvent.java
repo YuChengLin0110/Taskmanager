@@ -2,14 +2,10 @@ package com.example.taskmanager.entity;
 
 import java.time.LocalDateTime;
 
-import org.hibernate.generator.EventType;
-
 import com.example.taskmanager.entity.enums.EventStatusEnum;
 import com.example.taskmanager.entity.enums.EventTypeEnum;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;

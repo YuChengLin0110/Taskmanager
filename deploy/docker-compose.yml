@@ -12,6 +12,7 @@ services:
     container_name: ConfigServer
     ports:
       - "8888:8888"
+  
   taskmanager:
     env_file:
       - .env # 環境變數從 .env 檔讀取
@@ -23,6 +24,10 @@ services:
     ports:
       - "8080:8080" # 映射容器的 8080 到本機
     depends_on:
+      mysql-master:
+        condition: service_healthy
+      mysql-slave:
+        condition: service_healthy
       redis:
         condition: service_started # 這個服務要等 redis 啟動完成才會啟動
       rabbitmq:
@@ -35,6 +40,7 @@ services:
       SPRING_REDIS_PORT: ${SPRING_REDIS_PORT}
       SPRING_RABBITMQ_HOST: ${SPRING_RABBITMQ_HOST}
       SPRING_RABBITMQ_PORT: ${SPRING_RABBITMQ_PORT}
+#      SPRING_CLOUD_CONFIG_ENABLED: "false" # 關閉 config server
       SPRING_CONFIG_IMPORT: "optional:configserver:http://taskmanager-config-server:8888" # 從 Config Server 匯入設定
 
   redis:
@@ -56,6 +62,40 @@ services:
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
    # volumes:        先註解，不將資料持久化
     #  - rabbitmq-data:/var/lib/rabbitmq
+
+  mysql-master:
+    image: mysql:8.0.38
+    container_name: mysql-master
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: task_manager
+    volumes:
+      - ./master-data:/var/lib/mysql
+      - ./mysql/master.cnf:/etc/mysql/conf.d/custom.cnf
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s # 每幾秒檢查一次
+      timeout: 3s # 最多等幾秒沒回應就判定失敗
+      retries: 10 # 失敗重試次數
+
+  mysql-slave:
+    image: mysql:8.0.38
+    container_name: mysql-slave
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: task_manager
+    volumes:
+      - ./slave-data:/var/lib/mysql
+      - ./mysql/slave.cnf:/etc/mysql/conf.d/custom.cnf
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s # 每幾秒檢查一次
+      timeout: 3s # 最多等幾秒沒回應就判定失敗
+      retries: 10 # 失敗重試次數
 
   prometheus:
     image: prom/prometheus:latest

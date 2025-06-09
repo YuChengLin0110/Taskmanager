@@ -1,0 +1,19 @@
+[mysqld]
+
+# 開啟 GTID 模式 (主從都要開)
+# 這樣從庫才能根據 GTID 自動同步，不需要手動指定 binlog 名稱與位置
+gtid_mode=ON
+
+# 強制所有操作都符合 GTID 的一致性要求
+enforce_gtid_consistency=ON
+
+# 指定這台從庫的唯一 ID，跟主庫不能一樣
+server-id=2
+
+# 設定從庫接收 binlog 時用的中繼檔（relay log）
+# 從庫會從主庫下載 binlog 暫存在 relay log 裡再執行，這邊設定的是檔案前綴名稱
+relay-log=relay-log
+
+# 設定這台為唯讀（read only）
+# 這只是防止一般帳號操作，root 還是能寫入！
+read_only=1

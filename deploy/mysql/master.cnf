@@ -1,0 +1,18 @@
+[mysqld]
+
+# 開啟 GTID（全域交易 ID）模式，讓主從能用 GTID 方式同步
+gtid_mode=ON
+
+# 強制所有操作都符合 GTID 的一致性要求
+enforce_gtid_consistency=ON
+
+# 指定這台資料庫的唯一 ID ，主從需不同
+
+server-id=1
+
+# 啟用 binary log，主庫必須打開才能讓從庫同步
+# 所有操作都會寫進 binlog，slave 就是靠這些 log 來重播資料
+log-bin=mysql-bin
+
+# 設定 binlog 格式為 ROW（記錄實際欄位變化）
+binlog-format=ROW

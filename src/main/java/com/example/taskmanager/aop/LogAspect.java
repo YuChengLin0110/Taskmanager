@@ -45,7 +45,9 @@ public class LogAspect {
 			
 			log.info("[END] {}.{} Result = {} ({} ms)", className, methodName, result, end - start);
 			
-			return result; // 攔截後，把結果交回去，讓程式流程繼續
+			// @Around 一定要有 joinPoint.proceed()
+	        // 要 trurn 回去 ， 被攔截的方法才會繼續執行
+			return result;
 			
 		//Throwable 是所有錯誤和例外的頂層
 		} catch (Throwable e) {

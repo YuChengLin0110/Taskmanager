@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.taskmanager.dao.UserDAO;
 import com.example.taskmanager.entity.User;
@@ -40,18 +41,21 @@ public class UserServiceImpl implements UserService{
 		
         return userDAO.insertUser(user) > 0 ? Optional.of(user) : Optional.empty();
     }
-
+	
     @Override
+    @Transactional(readOnly = true)
     public Optional<User> findById(Long id) {
         return Optional.ofNullable(userDAO.findById(id));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<User> findByUsername(String username) {
         return Optional.ofNullable(userDAO.findByUsername(username));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<User> findAllUsers() {
         return userDAO.findAllUsers();
     }

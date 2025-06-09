@@ -97,12 +97,11 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
-
-		<!--  H2 資料庫（開發測試用） -->
+		
+		<!-- MySQL -->
 		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>runtime</scope>
+    		<groupId>com.mysql</groupId>
+    		<artifactId>mysql-connector-j</artifactId>
 		</dependency>
 
 		<!--  單元測試 -->
@@ -162,25 +161,36 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-		
+
 		<!-- 開啟 Spring Boot 的監控功能（/actuator/health、/actuator/metrics 等） -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
-		
+
 		<!-- 加這個就能讓 /actuator/prometheus 自動出現，讓 Prometheus 可以抓監控資料 -->
 		<dependency>
 			<groupId>io.micrometer</groupId>
 			<artifactId>micrometer-registry-prometheus</artifactId>
 		</dependency>
-		
-		<!-- Spring Cloud Config Client -->
+
+		<!-- Spring Cloud Config Client  -->
 		<dependency>
     		<groupId>org.springframework.cloud</groupId>
     		<artifactId>spring-cloud-starter-config</artifactId>
 		</dependency>
 
+		<!--  Spring WebFlux  -->
+		<dependency>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
 	
 	<!-- Spring Cloud 的 BOM ，統一管理版本避免衝突 -->

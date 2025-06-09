@@ -25,6 +25,9 @@ public class OperationLogAspect {
 		String args = Arrays.toString(joinPoint.getArgs());
 		
 		log.info("[OPERATION] {} - {}.{} args = {}", action, className, methodName, args);
+		
+		// @Around 一定要有 joinPoint.proceed()
+        // 要 trurn 回去 ， 被攔截的方法才會繼續執行
 		return joinPoint.proceed();
 	}
 }
