@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.taskmanager.dao.OutboxEventDAO;
 import com.example.taskmanager.entity.OutboxEvent;
@@ -30,6 +31,7 @@ public class OutboxEventServiceImpl implements OutboxEventService{
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<OutboxEvent> findPendingEvents(int limit) {
 		return outboxEventDAO.findPendingEvents(limit);
 	}

@@ -17,6 +17,8 @@ public class OperationLogAspect {
 	
 	private static final Logger log = LoggerFactory.getLogger(OperationLogAspect.class);
 	
+	// 只攔截有加上 @OperationLog 的方法
+	// 這裡的 operationLog 是對應下面方法參數的名稱
 	@Around("@annotation(operationLog)")
 	public Object logOperation(ProceedingJoinPoint joinPoint, OperationLog operationLog) throws Throwable {
 		String action = operationLog.value();

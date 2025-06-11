@@ -14,21 +14,19 @@ import org.springframework.stereotype.Component;
 import com.example.taskmanager.entity.OutboxEvent;
 import com.example.taskmanager.entity.dto.OutboxEventMarkAsFailedDTO;
 import com.example.taskmanager.entity.enums.EventStatusEnum;
-import com.example.taskmanager.lock.RedisLockWatchdog;
 import com.example.taskmanager.producer.TaskMessageProducer;
 import com.example.taskmanager.service.OutboxEventService;
-import com.example.taskmanager.service.RedisLockService;
+import com.example.taskmanager.utils.RedisDistributedLockExecutor;
 
 /*
  * 定期處理未處理的 Outbox 事件
  *
- * 確保如果系統部署在多個實例上時，只有一個實例會執行這段邏輯，避免重複發送事件
- * 透過 Redis 分布式鎖來保護整個邏輯區塊
+ * 當系統部署多個實例時，確保只有一個實例執行這段邏輯，避免事件重複發送
+ * 利用 Redisson 的分布式鎖來保護整個處理流程
+ * 交由 Redisson 自動管理鎖的續期機制
  *
- * 拿到鎖之後，會啟動 RedisLockWatchdog 執行緒，每隔一段時間延長鎖的過期時間
- * 確保處理事件的過程中鎖不會自動過期，避免鎖被其他實例搶走
- *
- * 如果成功取得鎖，會查出處理的事件，並交給執行緒池 ThreadPoolTaskExecutor
+ * 成功取得鎖後，撈出待處理的事件
+ * 使用 ThreadPoolTaskExecutor 執行緒池非同步處理每個事件
  * */
 @Component
 public class OutboxEventScheduler {
@@ -37,52 +35,41 @@ public class OutboxEventScheduler {
 	
 	private final OutboxEventService outboxEventService;
 	private final TaskMessageProducer taskMessageProducer;
-	private final RedisLockService redisLockService;
 	private final ThreadPoolTaskExecutor taskExecutor;
+	private final RedisDistributedLockExecutor lockExecutor;
 	
 	@Value("${rabbitmq.retry.max}")
 	private int RETRY_MAX;
 	
-	@Value("${redis.lock.key.outboxevent}")
-	private String REDIS_LOCK_KEY;
-	
-	@Value("${redis.lock.expire.outboxevent}")
-	private long REDIS_EXPIRE_TIME;
+	private String OUTBOX_LOCK_KEY = "outbox:lock";
 	
 	@Autowired
-	public OutboxEventScheduler (OutboxEventService outboxEventService, TaskMessageProducer taskMessageProducer, RedisLockService redisLockService, ThreadPoolTaskExecutor taskExecutor) {
+	public OutboxEventScheduler (OutboxEventService outboxEventService, TaskMessageProducer taskMessageProducer, ThreadPoolTaskExecutor taskExecutor, RedisDistributedLockExecutor lockExecutor) {
 		this.outboxEventService = outboxEventService;
 		this.taskMessageProducer = taskMessageProducer;
-		this.redisLockService = redisLockService;
 		this.taskExecutor = taskExecutor;
+		this.lockExecutor = lockExecutor;
 	}
 	
 	@Scheduled(fixedRate = 60000)  // 使用 Spring 的定時任務，Application 要有 @EnableScheduling 才會啟動
 	public void processOutboxEvents() {
-		// 嘗試取得 Redis 鎖
-		String lockValue = redisLockService.tryLock(REDIS_LOCK_KEY, REDIS_EXPIRE_TIME);
-		
-		if (lockValue != null) {
-			
-			// 創建監聽用的執行緒，用來延長鎖的過時時間，預防還沒處理完就被釋放
-			RedisLockWatchdog watchdog = new RedisLockWatchdog(redisLockService.getRedisTemplate(), REDIS_LOCK_KEY, lockValue, REDIS_EXPIRE_TIME);
-			Thread watchdogThread = new Thread(watchdog);
-			watchdogThread.start();
-			
-			try {
-				List<OutboxEvent> pendingEvents = outboxEventService.findPendingEvents(10);
+		try {
+			// 嘗試取得分布式鎖
+			lockExecutor.executeWithoutResult(OUTBOX_LOCK_KEY, 5, 30, () -> {
 				
-				for (OutboxEvent event : pendingEvents) {
-                    taskExecutor.submit(() -> processEvent(event)); // 使用執行緒池處理事件
-                }
+				List<OutboxEvent> events = outboxEventService.findPendingEvents(10);
 				
-			}finally {
-				// 結束後停止監聽用的執行緒，並釋放 Redis 鎖
-				watchdog.stop();
-				redisLockService.unLock(REDIS_LOCK_KEY, lockValue);
-			}
-		}else {
-			log.warn("Unable to get lock for OutboxEventScheduler, skip this run");
+				// 對每個事件，交給執行緒池非同步處理
+				for(OutboxEvent event : events) {
+					taskExecutor.submit(() -> processEvent(event));
+				}
+			});
+		} catch (IllegalStateException e) {
+			// 如果無法取得鎖，表示其他實例已取得，會捕獲此例外並警告
+			log.warn("排程未取得鎖 : {}", e.getMessage());
+		} catch (Exception e) {
+			// 其他執行錯誤，記錄錯誤日誌
+			log.error("排程任務執行失敗: {}", e.getMessage(), e);
 		}
 	}
 	
