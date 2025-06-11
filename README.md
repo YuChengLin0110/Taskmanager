@@ -17,13 +17,13 @@ MySQL 主從架構，透過 AOP 判斷，讀取導向從庫 Slave ， 寫入導�
 
 Outbox Pattern 確保資料與訊息一致性
 
+使用 Redisson 管理分布式鎖，確保多個實例只會有一個 Scheduler 執行任務
+
 使用 RabbitMQ 傳遞 任務
 
 任務消費者 Consumer 異步處理業務邏輯
 
 具備重試與錯誤記錄機制
-
-使用 Redis 實作分布式鎖，確保只有一個 Scheduler 執行任務，並結合 Watchdog 自動續期機制來維持鎖
 
 利用 Spring Cloud Config Server 從 Git 倉庫統一管理多環境設定，實現配置集中與動態更新
 
@@ -43,6 +43,8 @@ Spring Security + JWT ：身份驗證與授權
 Spring AOP：攔截切面，監聽特定方法紀錄Log，自訂 @Annotation 註解，搭配 AOP 自動攔截帶有該註解的方法
 
 MySQL 主從架構：讀寫分離，利用 AOP 自動切換資料庫來源
+
+Redisson：管理分布式鎖
 
 MyBatis：資料庫操作框架，使用 XML 撰寫 SQL
 
@@ -72,12 +74,14 @@ Scheduler 會定期撈取 PENDING 狀態事件並送出至 MQ
 
 消費者 Consumer 接收 MQ 訊息後執行對應業務邏輯
 
-## 分布式鎖與 Watchdog 機制
-為確保 OutboxEventScheduler 只會在單一實例上執行，並避免過期鎖造成重複執行，使用了 Redis 分布式鎖並結合 Watchdog 續期機制：
+## 分布式鎖 Redis + Redisson
+確保在多實例運行的情況下，Scheduler 只會有一個實例執行，專案使用 Redisson 提供的分布式鎖功能
 
-Redis 鎖：確保 Scheduler 只有成功獲得鎖的實例可以執行任務
+使用 RedisDistributedLockExecutor 統一管理鎖的獲取與釋放，支援等待超時與鎖定時長設定
 
-Watchdog：在任務執行過程中持續續期鎖，防止鎖過期，確保任務執行不會中斷
+執行方法包裹在鎖範圍內，確保任務不會同時被多個實例執行
+
+若無法獲取鎖，拋出異常避免任務重複執行
 
 ## MySQL 主從架構說明
 
