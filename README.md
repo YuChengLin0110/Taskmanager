@@ -33,6 +33,18 @@ Outbox Pattern 確保資料與訊息一致性
 
 任務狀態管理 NEW → PROCESSINGS → DONE
 
+通知策略模式實作：
+
+支援多種通知通道（Email、Slack 等）採用策略模式設計
+
+NotificationStrategyFactory 負責根據通知通道動態取得對應策略物件
+
+EmailNotificationStrategy 為範例實作，透過 Spring Mail 服務發送 Email
+
+NotificationService 作為通知發送統一入口，根據通道調用對應策略完成通知發送
+
+擴充性佳
+
 ## 技術
 Spring Boot：作為主要框架來構建 RESTful API
 
@@ -59,6 +71,18 @@ RabbitMQ：任務的非同步訊息處理
 SLF4J + Logback：系統日誌與錯誤追蹤
 
 Docker & docker-compose：容器化部署管理
+
+策略模式實作通知系統：
+
+動態選擇通知通道，擴充性佳
+
+Spring 管理多種通知策略 Bean，注入至工廠中集中管理
+
+Email策略整合 JavaMailSender 寄送郵件
+
+Slack 通知
+
+可擴展 Line 等第三方通知
 
 ## Docker 支援
 本專案整合 Docker，快速啟動完整開發環境
