@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.taskmanager.entity.ApiResponse;
 import com.example.taskmanager.entity.Task;
+import com.example.taskmanager.entity.dto.ApiResponse;
 import com.example.taskmanager.entity.dto.TaskRequestDTO;
 import com.example.taskmanager.entity.dto.TaskResponseDTO;
 import com.example.taskmanager.mapper.TaskMapper;

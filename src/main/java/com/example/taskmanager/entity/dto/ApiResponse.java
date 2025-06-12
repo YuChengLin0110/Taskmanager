@@ -1,4 +1,4 @@
-package com.example.taskmanager.entity;
+package com.example.taskmanager.entity.dto;
 
 public class ApiResponse<T> {
 	private boolean success;
