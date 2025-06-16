@@ -41,6 +41,10 @@ TaskManager 是一個基於 Spring Boot 的分布式任務管理系統，結合 
 - 工廠模式 Factory Pattern  
   建立策略工廠，集中管理並回傳不同策略實作
 
+- Outbox 模式 Outbox Pattern  
+  為了解決分散式系統中資料庫與訊息系統的一致性問題，導入 Outbox 模式  
+  當系統操作資料庫時，同步將事件寫入 Outbox 表，再由排程發送訊息至 RabbitMQ，確保資料與事件發送具備原子性  
+
 
 ## 使用技術
 - Spring Boot
@@ -56,7 +60,7 @@ TaskManager 是一個基於 Spring Boot 的分布式任務管理系統，結合 
 - BCrypt 密碼加密  
 - SLF4J + Logback 日誌  
 - Docker + docker-compose 容器化部署
-- 策略模式 通知系統擴充
+- 多個設計模式： Strategy Pattern 、 Factory Pattern 、 Outbox Pattern ...等
 
 ## 專案包含三個主要部分：
 
