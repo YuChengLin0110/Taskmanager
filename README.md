@@ -23,7 +23,10 @@ TaskManager 是一個基於 Spring Boot 的分布式任務管理系統，結合 
   使用 RabbitMQ 傳遞任務，由 Consumer 異步處理業務
 
 - **通知系統策略模式設計**  
-  支援多種通知通道 Email、Slack ，由 NotificationStrategyFactory 動態取得對應策略物件，擴充性強。  
+  支援多種通知通道 Email、Slack ，由 NotificationStrategyFactory 動態取得對應策略物件，擴充性強。
+
+- **事件驅動通知系統**
+  採用 Spring 事件發布與監聽機制，實現任務建立等事件的即時通知，系統模組間鬆耦合。
 
 - **多環境配置管理**  
   透過 Spring Cloud Config Server 從 Git 倉庫集中管理設定，實現配置動態更新。
@@ -43,8 +46,13 @@ TaskManager 是一個基於 Spring Boot 的分布式任務管理系統，結合 
 
 - Outbox 模式 Outbox Pattern  
   為了解決分散式系統中資料庫與訊息系統的一致性問題，導入 Outbox 模式  
-  當系統操作資料庫時，同步將事件寫入 Outbox 表，再由排程發送訊息至 RabbitMQ，確保資料與事件發送具備原子性  
+  當系統操作資料庫時，同步將事件寫入 Outbox 表，再由排程發送訊息至 RabbitMQ，確保資料與事件發送具備原子性
 
+- 觀察者模式 Observer Pattern  
+  利用 Spring 的事件機制來實現事件的發布與監聽  
+  發布端透過 ApplicationEventPublisher 發送事件
+  監聽端則使用 @EventListener 標註的方法來接收事件
+  當任務建立等事件發生時，所有註冊的監聽器會被自動通知
 
 ## 使用技術
 - Spring Boot
@@ -60,7 +68,7 @@ TaskManager 是一個基於 Spring Boot 的分布式任務管理系統，結合 
 - BCrypt 密碼加密  
 - SLF4J + Logback 日誌  
 - Docker + docker-compose 容器化部署
-- 多個設計模式： Strategy Pattern 、 Factory Pattern 、 Outbox Pattern ...等
+- 多個設計模式： Strategy Pattern 、 Factory Pattern 、 Outbox Pattern 、 Observer Pattern ...等
 
 ## 專案包含三個主要部分：
 
