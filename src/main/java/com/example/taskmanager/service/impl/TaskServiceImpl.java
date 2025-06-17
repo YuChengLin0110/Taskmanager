@@ -17,6 +17,8 @@ import com.example.taskmanager.entity.Task;
 import com.example.taskmanager.entity.User;
 import com.example.taskmanager.entity.enums.EventTypeEnum;
 import com.example.taskmanager.entity.enums.TaskStatusEnum;
+import com.example.taskmanager.notification.event.TaskCreatedEvent;
+import com.example.taskmanager.notification.publisher.NotificationEventPublisher;
 import com.example.taskmanager.service.OutboxEventService;
 import com.example.taskmanager.service.TaskCacheService;
 import com.example.taskmanager.service.TaskService;
@@ -33,15 +35,17 @@ public class TaskServiceImpl implements TaskService {
 	private final TaskCacheService taskCacheService;
 	private final OutboxEventService outboxEventService;
 	private final ObjectMapper objectMapper;
+	private final NotificationEventPublisher eventPublisher;
 
 	@Autowired
 	public TaskServiceImpl(TaskDAO taskDAO, UserService userService, TaskCacheService taskCacheService,
-			OutboxEventService outboxEventService, ObjectMapper objectMapper) {
+			OutboxEventService outboxEventService, ObjectMapper objectMapper, NotificationEventPublisher eventPublisher) {
 		this.taskDAO = taskDAO;
 		this.userService = userService;
 		this.taskCacheService = taskCacheService;
 		this.outboxEventService = outboxEventService;
 		this.objectMapper = objectMapper;
+		this.eventPublisher = eventPublisher;
 	}
 
 	@Override
@@ -67,6 +71,9 @@ public class TaskServiceImpl implements TaskService {
 			try {
 				// 如果插入 Task 成功，創建 Outbox ，之後由 scheduler 處理發送至 MQ ，避免訊息丟失，保證資料的一致性
 				outboxEventService.createEvent(getOutBoxEvent(task));
+			
+				// 使用事件發佈器發送 TaskCreatedEvent，通知有新任務
+				eventPublisher.publish(new TaskCreatedEvent(task));
 				log.info("Created outboxEvent for task id : {}", task.getId());
 			} catch (Exception e) {
 				log.error("Failed to create outboxEvent for task id : {}", task.getId(), e);

@@ -58,7 +58,7 @@ public class TaskMessageConsumer {
 			switch (event.getEventType()) {
 			case TASK_CREATED -> taskService.updateTaskStatus(event.getEntityId(), TaskStatusEnum.PROCESSINGS);
 			case TASK_ASSIGNED -> log.info("Event Type : TASK_ASSIGNED");
-			case TASK_OVERDUE -> log.info("Event Type : TASK_ASSIGNED");
+			case TASK_OVERDUE -> log.info("Event Type : TASK_OVERDUE");
 			default -> log.warn("Unhandled event type: {}", event.getEventType());
 			}
 
