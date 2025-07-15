@@ -20,6 +20,7 @@ public class MyBatisConfig {
 	
 	/* SqlSessionFactory 資料庫連線的工廠
 	 * SqlSession 資料庫連線通道，透過它執行 SQL
+	 * 指定了 自訂的 routingDataSource
 	 * */
 	@Bean
 	public SqlSessionFactory sqlSessionFactory(@Qualifier("routingDataSource") DataSource dataSource) throws Exception {
@@ -27,13 +28,14 @@ public class MyBatisConfig {
 		// 使用 MyBatis 提供的工廠類別來建立 SqlSessionFactory
 		SqlSessionFactoryBean factory = new SqlSessionFactoryBean();
 		
-		// 設定資料來源，這裡使用的是另外定義的 routingDataSource
+		// 設定資料來源，這裡使用的是自訂的 routingDataSource
 		factory.setDataSource(dataSource);
 		
 		// 指定 XML 檔的位置
+		// PathMatchingResourcePatternResolver().getResources() 把 String 轉成 Resource[] 給 setMapperLocations 使用
 		factory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources(XML_LOCATION));
 		
-		// 回傳 SqlSessionFactory 物件
+		// 回傳 SqlSessionFactory 物件 給 Spring 管理
 		return factory.getObject();
 	}
 }

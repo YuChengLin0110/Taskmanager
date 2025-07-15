@@ -65,13 +65,14 @@ public class DataSourceConfig {
 		// 設定所有可用的目標資料源
 		routingDataSource.setTargetDataSources(targetDataSources);
 		
-		// 設定當資料源 lookup key 不存在時，是否允許使用預設資料源
+		// 沒設定資料源時，是否使用預設資料源
 		routingDataSource.setLenientFallback(false);
 		
 		return routingDataSource;
 	}
 	
 	// 事務管理器，使用上面的 routingDataSource 來管理
+	// 多資料源要指定 DataSource ，有註冊上去， @Transactional 才有效果
 	@Bean
 	public DataSourceTransactionManager transactionManager(DataSource routingDataSource) {
 		return new DataSourceTransactionManager(routingDataSource);

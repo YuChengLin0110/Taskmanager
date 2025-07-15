@@ -7,12 +7,14 @@ import com.example.taskmanager.entity.enums.DataSourceType;
 
 /*
  * 用來儲存目前執行緒要用哪一個資料庫，Master or Slave
+ * 這邊要拿來給 RoutingDataSource get 資料源
+ * DataSourceAspect 去 set 資料源
  * */
 public class DataSourceContextHolder {
 	
 	private static final Logger log = LoggerFactory.getLogger(DataSourceContextHolder.class);
 	
-	// ThreadLocal 是一個 每條執行緒各自持有一份資料 的機制
+	// ThreadLocal 是 每條執行緒 自己的 儲物櫃 彼此不共享
 	// 這裡就是每條 thread 都可以各自記住 我要用主庫還是從庫
 	private static final ThreadLocal<DataSourceType> contextHolder = new ThreadLocal<>();
 	

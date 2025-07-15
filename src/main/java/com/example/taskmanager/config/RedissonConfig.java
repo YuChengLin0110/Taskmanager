@@ -16,6 +16,11 @@ public class RedissonConfig {
 	@Value("${spring.data.redis.port}")
 	private int redisPort;
 	
+	/* useSingleServer() 單台 Redis 伺服器
+	 * useClusterServers()  Cluster 架構（例如：3主3從）
+	 * useSentinelServers() Sentinel 會監控 master 、 slave 狀態，主機出問題自動切換
+	 * useMasterSlaveServers() 自己部署的 Redis 主從，實現讀寫分離
+	 * */
 	@Bean
 	public RedissonClient redissonClient() {
 		// 建立 Redisson 的配置

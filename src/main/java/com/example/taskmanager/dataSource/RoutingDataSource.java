@@ -13,14 +13,14 @@ public class RoutingDataSource  extends AbstractRoutingDataSource{
 	/**
      * 每次 Spring 要執行資料庫操作時
      * 都會呼叫這個方法決定目前要用哪個資料源的 key
-     * 這個 key 對應到 DataSourceConfig 設定的名稱
+     * 這個 key 對應到 DataSourceConfig routingDataSource 設定的名稱
      */
     @Override
     protected Object determineCurrentLookupKey() {
     	// 從自訂的 DataSourceContextHolder 取得目前執行緒設定的資料源類型
         Object dataSourceType = DataSourceContextHolder.get();
         
-        log.info("RoutingDataSource 決定使用資料源: " + dataSourceType + ", thread=" + Thread.currentThread().getId());
+        log.info("RoutingDataSource 決定使用資料源: " + dataSourceType + ", thread=" + Thread.currentThread().threadId());
     	
         // 回傳這個資料源 key 給 AbstractRoutingDataSource 讓它拿對應的 DataSource
         return dataSourceType;

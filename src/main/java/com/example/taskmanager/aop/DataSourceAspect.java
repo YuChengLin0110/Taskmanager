@@ -43,7 +43,7 @@ public class DataSourceAspect {
 	        }
 	        
 	        // @Around 一定要有 joinPoint.proceed()
-	        // 要 trurn 回去 ， 被攔截的方法才會繼續執行
+	        // 要 return 回去 ， 被攔截的方法才會繼續執行
 	        return joinPoint.proceed();
 	    } finally {
 	    	// 確保最後都會清除 ThreadLocal 中的資料源設定，避免影響下一個請求

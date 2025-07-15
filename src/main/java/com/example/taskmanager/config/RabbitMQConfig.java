@@ -112,6 +112,7 @@ public class RabbitMQConfig {
 	
 	// 因為要使用 DLQ 機制，需要自訂消費者行為
 	// 所以必須實作 SimpleRabbitListenerContainerFactory 並設定為手動確認模式
+	// ConnectionFactory 是 SpringBoot 會自動建立，裡面包含設定檔的 rabbitmq 連線資訊
 	@Bean
 	public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
 		SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
@@ -133,9 +134,16 @@ public class RabbitMQConfig {
 	// 建立 Queue 並設置DLQ 的相關配置來處理未成功的訊息
 	private Queue buildQueueWithDLQ(String queueName) {
 		Map<String, Object> args = new HashMap<>();
+		// 加上這兩個 才會啟用 DLQ
 		args.put("x-dead-letter-exchange", dlqExchange); // 指定死信交換器
 		args.put("x-dead-letter-routing-key", dlqRoutingKey); // 指定死信路由鍵
 		
+		// Queue(String name, boolean durable, boolean exclusive, boolean autoDelete, Map<String, Object> arguments)
+		// queueName 這個 queue 的名稱
+		// durable 是否為持久化 queue
+		// exclusive 是否為專用 queue ， true 表示只有建立它的 connection 能使用
+		// autoDelete 是否為自動刪除 queue ， true 表示 沒人綁定就自動刪掉
+		// args 額外參數，這裡用來設定 DLQ
 		return new Queue(queueName, true, false, false, args);
 	}
 }
