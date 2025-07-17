@@ -2,6 +2,9 @@
 
 基於 Spring Boot 的事件驅動任務系統，整合 JWT 驗證、通知機制、分散式鎖、RabbitMQ、Redis、Spring Cloud Config 、主從資料庫讀寫分離等，並透過 Docker 容器化
 
+## 簡易流程圖
+![image](others/簡易流程圖.jpg)
+
 ##  專案技術
 - **模組化架構設計**：以職責導向劃分模組（如 notification、scheduler、aop），提高維護性與可讀性
 - **事件驅動通知系統**：透過自定義事件與監聽器，實現任務事件與通知邏輯的完全解耦
