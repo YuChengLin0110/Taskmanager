@@ -78,28 +78,14 @@
 
 [TaskManagerConfigRepo](https://github.com/YuChengLin0110/TaskManagerConfigRepo)：儲存所有環境設定檔的 Git 倉庫
 
-### 專案目錄結構
-你的資料夾/
-
-├── docker-compose.yml
-
-├── .env                    # 機密資料環境變數
-
-├── taskmanager/            # 主應用程式 
-
-│   └── Dockerfile
-
-├── config-server/          # Config Server 
-
-│   └── Dockerfile
-
-請在專案根目錄下建立 .env 檔案， 可參考 .env.example
 
 ### 建置流程：  
+請將 taskmanager 與 config-server 放在同一個根目錄底下  
+請在 deploy/ 目錄下建立 .env 檔案， 可參考 .env.example  
 請先在本地建置好 taskmanager 與 config-server
 1. 本地打包 jar，執行 `mvn clean package -DskipTests` 
 
-2. 使用 docker-compose 在專案根目錄啟動 `docker-compose up --build`
+2. 使用 docker-compose 在 deploy/ 目錄啟動 `docker-compose up --build`
 
 啟動後包含以下容器：  
 - Config Server  
