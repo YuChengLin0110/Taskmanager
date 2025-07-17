@@ -42,15 +42,15 @@
 ## 系統架構
 
 `controller/`：負責接收任務相關 API 請求（透過 Swagger 測試）  
-`service/`：商業邏輯
+`service/`：商業邏輯  
 `scheduler/`：任務狀態檢查與 Outbox 推送的排程任務  
 `notification/`：通知系統模組，內含事件發布、策略選擇、發送通道  
 `producer/` / `consumer/`：RabbitMQ 生產者與消費者邏輯  
 `config/`：JWT、Redis、RabbitMQ、多資料源、分散式鎖等配置  
 `aop/`：切面  
-`dao/` / `mapper/`：MyBatis 操作資料庫
-`exception/`：全域例外處理，統一回傳格式給前端
-`utils/`：工具類，例如 Redis 鎖工具、 JWT 驗證工具 等  
+`dao/` / `mapper/`：MyBatis 操作資料庫  
+`exception/`：全域例外處理，統一回傳格式給前端  
+`utils/`：工具類，Redis 鎖工具、 JWT 驗證工具 等  
 `entity/`：DTO、Enum 與資料模型  
 `filters/`：JWT 授權攔截器 
 
