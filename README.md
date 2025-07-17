@@ -1,38 +1,15 @@
 # TaskManager
 
-TaskManager 是一個基於 Spring Boot 的分布式任務管理系統，結合 Spring Cloud Config、RabbitMQ、Redis 等技術，實現任務追蹤、狀態管理與非同步處理，並透過 Docker 容器化
+基於 Spring Boot 的事件驅動任務系統，整合 JWT 驗證、通知機制、分散式鎖、RabbitMQ、Redis、Spring Cloud Config 、主從資料庫讀寫分離等，並透過 Docker 容器化
 
-## 核心功能
-- **使用者認證與授權**  
-  採用 Spring Security 結合 JWT，實現安全的使用者註冊與登入流程。
-
-- **操作日誌與 AOP**  
-  透過 Spring AOP 攔截關鍵方法，自動記錄方法參數、回傳結果及執行時間。  
-  自訂 Annotation 搭配 AOP 自動觸發操作日誌，方便追蹤與除錯。
-
-- **資料庫讀寫分離與主從架構**  
-  使用 AOP 攔截 @Transactional 方法，自動根據 readOnly 判斷導向從庫或主庫
-
-- **分布式鎖管理**  
-  採用 Redisson 實現分布式鎖，確保多實例運行時 Scheduler 僅有一個實例執行任務，避免重複觸發。
-
-- **Outbox Pattern 保證資料與訊息一致性**  
- 確保資料與訊息一致性。任務事件寫入 Outbox 表，由 Scheduler 定期發送至 MQ
-
-- **任務非同步處理**  
-  使用 RabbitMQ 傳遞任務，由 Consumer 異步處理業務
-
-- **通知系統策略模式設計**  
-  支援多種通知通道 Email、Slack ，由 NotificationStrategyFactory 動態取得對應策略物件，擴充性強。
-
-- **事件驅動通知系統**
-  採用 Spring 事件發布與監聽機制，實現任務建立等事件的即時通知，系統模組間鬆耦合。
-
-- **多環境配置管理**  
-  透過 Spring Cloud Config Server 從 Git 倉庫集中管理設定，實現配置動態更新。
-
-- **容器化部署**  
-  使用 Docker 與 docker-compose 管理多容器服務，快速構建開發與生產環境。
+##  專案技術
+- **模組化架構設計**：以職責導向劃分模組（如 notification、scheduler、aop），提高維護性與可讀性
+- **事件驅動通知系統**：透過自定義事件與監聽器，實現任務事件與通知邏輯的完全解耦
+- **分散式鎖（Redisson）**：確保排程任務或併發操作安全
+- **RabbitMQ 整合**：具備 Outbox pattern 發送、手動 ACK / NACK、DLQ 死信處理與 Routing Key 分類
+- **主從資料庫架構**：讀寫分離配置，降低主庫壓力，使用 AOP 控制
+- **Spring Cloud Config**：集中管理系統設定
+- **操作紀錄與異常日誌 AOP**：自動記錄用戶操作與錯誤紀錄
 
 ## 設計模式
 
@@ -53,6 +30,26 @@ TaskManager 是一個基於 Spring Boot 的分布式任務管理系統，結合 
   發布端透過 ApplicationEventPublisher 發送事件
   監聽端則使用 @EventListener 標註的方法來接收事件
   當任務建立等事件發生時，所有註冊的監聽器會被自動通知
+
+## 資料庫讀寫分離
+由自定義的 `DataSourceAspect` 以 @Annotation 切換資料源  
+- `master`：寫入操作
+- `slave`：讀取操作  
+
+## 系統架構
+
+`controller/`：負責接收任務相關 API 請求（透過 Swagger 測試）  
+`service/`：商業邏輯
+`scheduler/`：任務狀態檢查與 Outbox 推送的排程任務  
+`notification/`：通知系統模組，內含事件發布、策略選擇、發送通道  
+`producer/` / `consumer/`：RabbitMQ 生產者與消費者邏輯  
+`config/`：JWT、Redis、RabbitMQ、多資料源、分散式鎖等配置  
+`aop/`：切面  
+`dao/` / `mapper/`：MyBatis 操作資料庫
+`exception/`：全域例外處理，統一回傳格式給前端
+`utils/`：工具類，例如 Redis 鎖工具、 JWT 驗證工具 等  
+`entity/`：DTO、Enum 與資料模型  
+`filters/`：JWT 授權攔截器 
 
 ## 使用技術
 - Spring Boot
