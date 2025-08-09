@@ -13,6 +13,7 @@
 - **主從資料庫架構**：讀寫分離配置，降低主庫壓力，使用 AOP 控制
 - **Spring Cloud Config**：集中管理系統設定
 - **操作紀錄與異常日誌 AOP**：自動記錄用戶操作與錯誤紀錄
+- **通知通道彈性切換：支援 Kafka 與 Spring Boot 內建的 Publisher
 
 ## 設計模式
 
@@ -37,7 +38,12 @@
 ## 資料庫讀寫分離
 由自定義的 `DataSourceAspect` 以 @Annotation 切換資料源  
 - `master`：寫入操作
-- `slave`：讀取操作  
+- `slave`：讀取操作
+
+## 彈性組件管理Conditional Bean Registration
+專案透過 Spring Boot 提供的 @ConditionalOnProperty 注解，根據設定檔動態註冊不同的通知發佈實作，實現彈性組件切換
+- `notification.mode=kafka`：啟用 KafkaNotificationPublisher，透過 Kafka Topic 發送通知，由 Kafka 消費者負責後續處理
+- `notification.mode=default`（或未設定）：使用 Spring Boot 內建 Publisher，直接發送 Email、Slack 等通知
 
 ## 系統架構
 
@@ -62,7 +68,8 @@
 - MyBatis
 - Redis
 - Redisson 分布式鎖
-- RabbitMQ 非同步訊息 
+- RabbitMQ 非同步訊息
+- Kafka 非同步訊息
 - Spring Cloud Config 配置集中管理  
 - Swagger/OpenAPI API 文件生成  
 - BCrypt 密碼加密  
@@ -92,6 +99,9 @@
 - TaskManager 主應用
 - Redis  
 - RabbitMQ
+- Kafke
+- Kafka-ui
+- zookeeper
 - MySQL Master & Slave
 - Prometheus  
 - Grafana
