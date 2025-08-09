@@ -97,6 +97,41 @@ services:
       timeout: 3s # 最多等幾秒沒回應就判定失敗
       retries: 10 # 失敗重試次數
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.0.1
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181 # Zookeeper 內部設定客戶端連接埠
+
+  kafka:
+    image: confluentinc/cp-kafka:7.0.1
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1 # Kafka Broker 的唯一 ID
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181 # Kafka 連接到 Zookeeper 容器和端口
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT # 通訊協議設定，使用 PLAINTEXT（非加密
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092  # Kafka 對外宣告的連接位址與端口，供其他服務連接
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 # 消費者偏移量紀錄的副本數量
+                                                # 1 表示只有一份備份
+                                                # 生產環境建議設為 2 或以上，提高資料可靠性
+                                                      
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8082:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: taskmanagerKafka
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092 # Kafka UI 連接 Kafka 位址
+    depends_on:
+      - kafka
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus

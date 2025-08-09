@@ -25,7 +25,7 @@ public class TaskCreatedNotificationResolver implements NotificationRequestResol
 	public TaskCreatedNotificationResolver(UserService userService) {
 		this.userService = userService;
 	}
-
+	
 	@Override
 	public NotificationRequest resolve(TaskCreatedEvent event) {
 		
@@ -39,6 +39,12 @@ public class TaskCreatedNotificationResolver implements NotificationRequestResol
 			email = user.get().getEmail();
 		}
 		
-		return new NotificationRequest(event.getMessage(), NotificationEventType.TASK_CREATED, email, "新任務通知：" + task.getTitle());
+		String message = event.getMessage();
+		NotificationEventType eventType = event.getNotificationEventType();
+		String subject =  "新任務通知：" + task.getTitle();
+		String kafkaTopic = event.getKafkaTopic();
+		
+		
+		return new NotificationRequest(message,eventType, email, "新任務通知：" + subject, kafkaTopic);
 	}
 }

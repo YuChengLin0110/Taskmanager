@@ -12,4 +12,4 @@ spring:
         initial-interval: 1000 # 重試等待起始時間，單位毫秒
         multiplier: 1.5 # 重試時間增加倍數
         max-interval: 5000 # 最大重試等待時間 cxeswd
-      enabled: false # 本機測試關閉使用 config Server
+      enabled: true # 本機測試關閉使用 config Server

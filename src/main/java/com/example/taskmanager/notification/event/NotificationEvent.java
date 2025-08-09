@@ -1,7 +1,11 @@
 package com.example.taskmanager.notification.event;
 
-public interface NotificationEvent {
+import com.example.taskmanager.entity.enums.NotificationEventType;
+
+public interface NotificationEvent<T> {
 	
+	T getSource();
 	String getMessage();
-	Object getSource();
+	String getKafkaTopic();
+	NotificationEventType getNotificationEventType();
 }

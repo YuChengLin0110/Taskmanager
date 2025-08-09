@@ -1,7 +1,7 @@
 package com.example.taskmanager.notification.publisher;
 
-import com.example.taskmanager.notification.event.NotificationEvent;
+import com.example.taskmanager.entity.dto.NotificationRequest;
 
 public interface NotificationEventPublisher {
-	void publish (NotificationEvent event);
+	void publish (NotificationRequest request);
 }

@@ -1,0 +1,80 @@
+services:
+
+  redis:
+    image: redis:7-alpine
+    container_name: taskmanager-redis
+    ports:
+      - "6379:6379"
+   # volumes:        先註解，不將資料持久化
+    #  - redis-data:/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: taskmanager-rabbitmq
+    ports:
+      - "5672:5672"    # RabbitMQ 傳遞消息的 port
+      - "15672:15672"  # 管理介面
+    environment: # 設定要傳進容器內的環境變數
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+   # volumes:        先註解，不將資料持久化
+    #  - rabbitmq-data:/var/lib/rabbitmq
+
+  mysql-master:
+    image: mysql:8.0.38
+    container_name: mysql-master
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: task_manager
+    volumes:
+      - ./master-data:/var/lib/mysql # 把主庫的資料檔掛在本機目錄
+      - ./mysql/master.cnf:/etc/mysql/conf.d/custom.cnf # 掛主庫的設定檔（例如 GTID、binlog 等）
+
+  mysql-slave:
+    image: mysql:8.0.38
+    container_name: mysql-slave
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: task_manager
+    volumes:
+      - ./slave-data:/var/lib/mysql
+      - ./mysql/slave.cnf:/etc/mysql/conf.d/custom.cnf
+      
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.0.1
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:7.0.1
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+     # KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    ports:
+      - "8082:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: myKafka
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      - kafka
