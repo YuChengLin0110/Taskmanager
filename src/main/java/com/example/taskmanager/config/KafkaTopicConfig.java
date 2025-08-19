@@ -9,13 +9,22 @@ import org.springframework.kafka.config.TopicBuilder;
 public class KafkaTopicConfig {
 	
 	public static final String NOTIFACTION_TOPIC = "notification-topic";
+	public static final String NOTIFACTION_DLT_TOPIC = "notification-topic.dlt";
 	
-	// // 用 TopicBuilder 來創建一個 Kafka 的 Topic
+	// 用 TopicBuilder 來創建一個 Kafka 的 Topic
 	@Bean
-	public NewTopic noticactionTopic() {
+	public NewTopic notificationTopic() {
 		return TopicBuilder.name(NOTIFACTION_TOPIC)
 				.partitions(1) // 分割槽數設為1，代表只有一個分區
 				.replicas(1) // 副本數設為1，表示只有一份資料備份
 				.build(); // 完成並回傳這個 Topic 物件
+	}
+	
+	@Bean
+	public NewTopic notificationDltTopic() {
+		return TopicBuilder.name(NOTIFACTION_DLT_TOPIC)
+				.partitions(1)
+				.replicas(1)
+				.build();
 	}
 }

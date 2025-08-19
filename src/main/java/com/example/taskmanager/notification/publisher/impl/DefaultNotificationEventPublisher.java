@@ -1,4 +1,4 @@
-package com.example.taskmanager.notification.publisher;
+package com.example.taskmanager.notification.publisher.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -6,6 +6,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import com.example.taskmanager.entity.dto.NotificationRequest;
+import com.example.taskmanager.notification.publisher.NotificationEventPublisher;
 
 /*
  * @ConditionalOnProperty

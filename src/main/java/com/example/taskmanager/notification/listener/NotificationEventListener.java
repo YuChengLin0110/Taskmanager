@@ -6,6 +6,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ import com.example.taskmanager.notification.resolver.TaskCreatedNotificationReso
 import com.example.taskmanager.notification.strategy.NotificationStrategy;
 
 @Component
+@ConditionalOnProperty(name = "notification.mode", havingValue = "default", matchIfMissing = true)
 public class NotificationEventListener {
 
 	private static final Logger log = LoggerFactory.getLogger(NotificationEventListener.class);

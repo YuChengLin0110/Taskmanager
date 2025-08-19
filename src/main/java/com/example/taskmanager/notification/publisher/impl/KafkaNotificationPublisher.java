@@ -1,4 +1,4 @@
-package com.example.taskmanager.notification.publisher;
+package com.example.taskmanager.notification.publisher.impl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.example.taskmanager.entity.dto.NotificationRequest;
 import com.example.taskmanager.notification.event.NotificationEvent;
 import com.example.taskmanager.notification.event.TaskCreatedEvent;
+import com.example.taskmanager.notification.publisher.NotificationEventPublisher;
 
 /*
  * @ConditionalOnProperty
