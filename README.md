@@ -14,7 +14,7 @@
 - **Spring Cloud Config**：集中管理系統設定
 - **操作紀錄與異常日誌 AOP**：自動記錄用戶操作與錯誤紀錄
 - **通知通道彈性切換**：支援 Kafka 與 Spting Boot 內建的 Publisher
-- **批量建立任務**：一次性處理多筆任務資料，減少資料庫存取次數，提高效能
+- **批量建立任務**：使用 MyBatis 批次操作，透過單次 commit 提升資料庫效率並降低 I/O 負載
 
 ## 設計模式
 
@@ -37,7 +37,7 @@
   當任務建立等事件發生時，所有註冊的監聽器會被自動通知
 
 ## 批量操作 Batch Operations
-批量插入任務：使用 MyBatis 的批次處理功能，手動控制 SqlSession 將多筆任務資料一次性寫入資料庫，減少資料庫存取次數，提高效能
+批量建立任務：使用 MyBatis 的批次處理功能，手動控制 SqlSession，透過單次 commit 提升資料庫效率並降低 I/O 負載
 
 ## 資料庫讀寫分離
 由自定義的 `DataSourceAspect` 以 @Annotation 切換資料源  
