@@ -46,6 +46,12 @@ public class RabbitMQConfig {
 
 	@Value("${rabbitmq.queue.task.overdue}")
 	private String taskOverdueQueueName;
+	
+	@Value("${rabbitmq.routingkey.task.batch.created}")
+	private String taskBatchCreatedRoutingKey;
+
+	@Value("${rabbitmq.queue.task.batch.created}")
+	private String taskBatchCreatedQueueName;
 
 	@Value("${rabbitmq.queue.task.dlq}")
 	private String dlqQueueName;
@@ -63,6 +69,11 @@ public class RabbitMQConfig {
 	@Bean
 	public Queue taskOverdueQueue() {
 		return buildQueueWithDLQ(taskOverdueQueueName);
+	}
+	
+	@Bean
+	public Queue taskBatchCreatedQueue() {
+	    return buildQueueWithDLQ(taskBatchCreatedQueueName);
 	}
 
 	@Bean
@@ -103,6 +114,11 @@ public class RabbitMQConfig {
 	@Bean
 	public Binding bindingTaskOverdue(Queue taskOverdueQueue, DirectExchange exchange) {
 		return BindingBuilder.bind(taskOverdueQueue).to(exchange).with(taskOverdueRoutingKey);
+	}
+	
+	@Bean
+	public Binding bindingTaskBatchCreated(Queue taskBatchCreatedQueue, DirectExchange exchange) {
+	    return BindingBuilder.bind(taskBatchCreatedQueue).to(exchange).with(taskBatchCreatedRoutingKey);
 	}
 
 	@Bean

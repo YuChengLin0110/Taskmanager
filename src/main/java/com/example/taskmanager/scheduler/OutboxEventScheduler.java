@@ -1,6 +1,7 @@
 package com.example.taskmanager.scheduler;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -11,10 +12,13 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
+import com.example.taskmanager.entity.BatchOutbox;
+import com.example.taskmanager.entity.IOutbox;
 import com.example.taskmanager.entity.OutboxEvent;
 import com.example.taskmanager.entity.dto.OutboxEventMarkAsFailedDTO;
 import com.example.taskmanager.entity.enums.EventStatusEnum;
 import com.example.taskmanager.producer.TaskMessageProducer;
+import com.example.taskmanager.service.BatchOutboxService;
 import com.example.taskmanager.service.OutboxEventService;
 import com.example.taskmanager.utils.RedisDistributedLockExecutor;
 
@@ -37,6 +41,7 @@ public class OutboxEventScheduler {
 	private final TaskMessageProducer taskMessageProducer;
 	private final ThreadPoolTaskExecutor taskExecutor;
 	private final RedisDistributedLockExecutor lockExecutor;
+	private final BatchOutboxService batchOutboxService;
 	
 	@Value("${rabbitmq.retry.max}")
 	private int RETRY_MAX;
@@ -44,11 +49,14 @@ public class OutboxEventScheduler {
 	private String OUTBOX_LOCK_KEY = "outbox:lock";
 	
 	@Autowired
-	public OutboxEventScheduler (OutboxEventService outboxEventService, TaskMessageProducer taskMessageProducer, ThreadPoolTaskExecutor taskExecutor, RedisDistributedLockExecutor lockExecutor) {
+	public OutboxEventScheduler (OutboxEventService outboxEventService, TaskMessageProducer taskMessageProducer, 
+			ThreadPoolTaskExecutor taskExecutor, RedisDistributedLockExecutor lockExecutor,
+			BatchOutboxService batchOutboxService) {
 		this.outboxEventService = outboxEventService;
 		this.taskMessageProducer = taskMessageProducer;
 		this.taskExecutor = taskExecutor;
 		this.lockExecutor = lockExecutor;
+		this.batchOutboxService = batchOutboxService;
 	}
 	
 	@Scheduled(fixedRate = 60000)  // 使用 Spring 的定時任務，Application 要有 @EnableScheduling 才會啟動
@@ -57,10 +65,12 @@ public class OutboxEventScheduler {
 			// 嘗試取得分布式鎖
 			lockExecutor.executeWithoutResult(OUTBOX_LOCK_KEY, 5, 30, () -> {
 				
-				List<OutboxEvent> events = outboxEventService.findPendingEvents(10);
+				List<IOutbox> pending = new ArrayList<>();
+				pending.addAll(outboxEventService.findPendingEvents(10));
+				pending.addAll(batchOutboxService.findPending(10));
 				
 				// 對每個事件，交給執行緒池非同步處理
-				for(OutboxEvent event : events) {
+				for(IOutbox event : pending) {
 					taskExecutor.submit(() -> processEvent(event));
 				}
 			});
@@ -73,27 +83,53 @@ public class OutboxEventScheduler {
 		}
 	}
 	
-	private void processEvent(OutboxEvent event) {
+	private void processEvent(IOutbox  event) {
 		try {
+			// 發送消息
 			taskMessageProducer.send(event);
-			outboxEventService.markAsSent(event.getId());
+			
+			// 標記事件為已發送
+			event.setStatus(EventStatusEnum.SENT);
+			event.setSentTime(LocalDateTime.now());
+			
+			// 更新資料庫
+			if(event instanceof OutboxEvent outboxEvent) {
+				outboxEventService.markAsSent(event.getId());
+			} else if (event instanceof BatchOutbox batchOutbox) {
+				batchOutboxService.update(batchOutbox);
+			}
+			
 			
 			log.info("Event ID {} sent and marked as SENT", event.getId());
 		}catch(Exception e) {
 			log.error("Failed to send event ID {}: {}", event.getId(), e.getMessage(), e);
 			
-			OutboxEventMarkAsFailedDTO dto = new OutboxEventMarkAsFailedDTO();
-			dto.setId(event.getId());
-			dto.setLastError(e.getMessage());
-			
-			// 如果重試太多次還是失敗，就標記為 DEAD
-			if(event.getRetryCount() >= RETRY_MAX) {
-				event.setStatus(EventStatusEnum.DEAD);
-				outboxEventService.markAsDead(event);
-			} else {
-				dto.setNextRetryTime(LocalDateTime.now().plusMinutes(1)); // 設定 1 分鐘後再重試
-				outboxEventService.markAsFailed(dto);
-			}	
+			// 單筆事件失敗處理
+	        if (event instanceof OutboxEvent outboxEvent) {
+	            OutboxEventMarkAsFailedDTO dto = new OutboxEventMarkAsFailedDTO();
+	            dto.setId(outboxEvent.getId());
+	            dto.setLastError(e.getMessage());
+
+	            if (outboxEvent.getRetryCount() >= RETRY_MAX) {
+	                outboxEvent.setStatus(EventStatusEnum.DEAD);
+	                outboxEventService.markAsDead(outboxEvent);
+	            } else {
+	                dto.setNextRetryTime(LocalDateTime.now().plusMinutes(1));
+	                outboxEventService.markAsFailed(dto);
+	            }
+	        
+	        // 批次事件失敗處理
+	        } else if (event instanceof BatchOutbox batchOutbox) {
+	            batchOutbox.setRetryCount(batchOutbox.getRetryCount() == null ? 1 : batchOutbox.getRetryCount() + 1);
+
+	            if (batchOutbox.getRetryCount() >= RETRY_MAX) {
+	                batchOutbox.setStatus(EventStatusEnum.DEAD);
+	            } else {
+	                batchOutbox.setStatus(EventStatusEnum.FAILED);
+	                batchOutbox.setNextRetryTime(LocalDateTime.now().plusMinutes(1));
+	            }
+	            batchOutboxService.update(batchOutbox);
+	        }
 		}
 	}
 }

@@ -21,4 +21,6 @@ public interface TaskService {
 	List<Task> getTasksByUsername(String username);
 	
 	boolean updateTaskStatus(Long id, TaskStatusEnum status);
+	
+	void batchInsert(List<Task> tasks, Long userId);
 }

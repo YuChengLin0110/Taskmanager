@@ -25,4 +25,6 @@ public interface TaskDAO {
 	List<Task> getTasksByUserName(String username);
 	
 	int updateTaskStatus(Long id, String status);
+	
+	int batchInsertForeach(List<Task> tasks);
 }

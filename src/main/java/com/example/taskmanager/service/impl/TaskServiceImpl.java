@@ -1,9 +1,13 @@
 package com.example.taskmanager.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +22,7 @@ import com.example.taskmanager.entity.User;
 import com.example.taskmanager.entity.dto.NotificationRequest;
 import com.example.taskmanager.entity.enums.EventTypeEnum;
 import com.example.taskmanager.entity.enums.TaskStatusEnum;
+import com.example.taskmanager.notification.event.TaskBatchCreatedEvent;
 import com.example.taskmanager.notification.event.TaskCreatedEvent;
 import com.example.taskmanager.notification.publisher.NotificationEventPublisher;
 import com.example.taskmanager.notification.resolver.NotificationRequestResolver;
@@ -39,10 +44,15 @@ public class TaskServiceImpl implements TaskService {
 	private final ObjectMapper objectMapper;
 	private final NotificationEventPublisher eventPublisher;
 	private final NotificationRequestResolver<TaskCreatedEvent> taskCreatedNotificationRequestResolver;
+	private final NotificationRequestResolver<TaskBatchCreatedEvent> taskBatchCreatedNotificationRequestResolver;
+	private final SqlSessionFactory sqlSessionFactory;
 
 	@Autowired
 	public TaskServiceImpl(TaskDAO taskDAO, UserService userService, TaskCacheService taskCacheService,
-			OutboxEventService outboxEventService, ObjectMapper objectMapper, NotificationEventPublisher eventPublisher, NotificationRequestResolver<TaskCreatedEvent> taskCreatedNotificationRequestResolver) {
+			OutboxEventService outboxEventService, ObjectMapper objectMapper, NotificationEventPublisher eventPublisher, 
+			NotificationRequestResolver<TaskCreatedEvent> taskCreatedNotificationRequestResolver,
+			NotificationRequestResolver<TaskBatchCreatedEvent> taskBatchCreatedNotificationRequestResolver,
+			SqlSessionFactory sqlSessionFactory) {
 		this.taskDAO = taskDAO;
 		this.userService = userService;
 		this.taskCacheService = taskCacheService;
@@ -50,6 +60,8 @@ public class TaskServiceImpl implements TaskService {
 		this.objectMapper = objectMapper;
 		this.eventPublisher = eventPublisher;
 		this.taskCreatedNotificationRequestResolver = taskCreatedNotificationRequestResolver;
+		this.sqlSessionFactory = sqlSessionFactory;
+		this.taskBatchCreatedNotificationRequestResolver = taskBatchCreatedNotificationRequestResolver;
 	}
 
 	@Override
@@ -201,5 +213,69 @@ public class TaskServiceImpl implements TaskService {
 			log.error("Failed to convert task to JSON for outboxEvent: {}", task, e);
 			throw new RuntimeException("JSON serialize error", e);
 		}
+	}
+
+	@Override
+	@Transactional
+	public void batchInsert(List<Task> tasks, Long userId) {
+		if (tasks == null || tasks.isEmpty()) {
+			return;
+		}
+		
+		List<OutboxEvent> outboxEvents = new ArrayList<>();
+		
+		LocalDateTime now = LocalDateTime.now();
+		for(Task task : tasks) {
+			task.setUserId(userId);
+            task.setStatus(TaskStatusEnum.NEW);
+            task.setCreatedTime(now);
+            task.setUpdatedTime(now);
+            
+         // 建立對應的 OutboxEvent
+            OutboxEvent event = getOutBoxEvent(task);
+            outboxEvents.add(event);
+		}
+		
+		int size = tasks.size();
+		log.info("Batch insert start, total tasks: {}", size);
+		
+		// 數量 < 100 直接使用 MyBatis 的 forEach
+		if(size < 100) {
+			taskDAO.batchInsertForeach(tasks);
+		}else {
+			// 數量 >= 100 手動操作 SqlSession
+			try (SqlSession session = sqlSessionFactory.openSession(ExecutorType.BATCH, false)) {
+                TaskDAO mapper = session.getMapper(TaskDAO.class);
+                int count = 0;
+                for (Task task : tasks) {
+                    mapper.insertTask(task);
+                    count++;
+                    
+                    // 每 100 筆 flushStatements，避免記憶體累積
+                    if (count % 100 == 0) {
+                        session.flushStatements();
+                    }
+                }
+              // 因為這個方法有使用 @Transactional
+              // 所以 session.commit(); 不手動 ， 交給 @Transactional 去 commit
+            } catch (Exception e) {
+                log.error("Batch Task insert failed", e);
+                throw new RuntimeException("Batch Task insert failed", e);
+            }
+		}
+		
+		log.info("Tasks inserted successfully, preparing OutboxEvents");
+		
+		// 批次插入 OutboxEvent
+		outboxEventService.batchInsertForeach(outboxEvents);
+		
+		log.info("OutboxEvents inserted successfully, total: {}", outboxEvents.size());
+		
+		// 發送通知
+		NotificationRequest notificationRequest = taskBatchCreatedNotificationRequestResolver.resolve(new TaskBatchCreatedEvent(tasks));
+		// 使用事件發佈器發送 TaskCreatedEvent，通知有批量任務
+		eventPublisher.publish(notificationRequest);
+		
+		log.info("Notifications published for all batch tasks");
 	}
 }

@@ -22,4 +22,6 @@ public interface OutboxEventDAO {
 	void markAsFailed(OutboxEventMarkAsFailedDTO dto);
 	
 	void markAsDead(OutboxEvent enent);
+	
+	void batchInsertForeach(List<OutboxEvent> events);
 }

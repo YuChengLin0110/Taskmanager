@@ -10,13 +10,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.example.taskmanager.entity.dto.NotificationRequest;
 import com.example.taskmanager.entity.enums.NotificationEnum;
 import com.example.taskmanager.entity.enums.NotificationEventType;
 import com.example.taskmanager.notification.NotificationStrategyFactory;
-import com.example.taskmanager.notification.event.NotificationEvent;
-import com.example.taskmanager.notification.resolver.TaskCreatedNotificationResolver;
 import com.example.taskmanager.notification.strategy.NotificationStrategy;
 
 @Component
@@ -36,9 +36,12 @@ public class NotificationEventListener {
 	 * 監聽任務建立事件
 	 * 這個方法會自動監聽由 ApplicationEventPublisher 發布的 TaskCreatedEvent
 	 * @Async 這個方法會在另一個執行緒裡跑，發事件的那條執行緒不會被阻塞
+	 * 如果通知系統這邊有錯誤，也不會影響到 service 的 @Transactional
 	 */
 	@Async
-	@EventListener
+//	@EventListener 改用 @TransactionalEventListener 搭配 phase = TransactionPhase.AFTER_COMMIT
+//	在 Service @Transactional 只有當 Service Transactional 提交成功後才執行，避免事務回滾後仍發送通知
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void notification(NotificationRequest request) {
 		
 		// 取得這次要通知的通道

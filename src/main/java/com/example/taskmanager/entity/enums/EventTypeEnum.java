@@ -29,5 +29,10 @@ public enum EventTypeEnum {
 	/**
 	 * 任務關閉
 	 */
-	TASK_CLOSED
+	TASK_CLOSED,
+	
+	/**
+	 * 任務批量創建
+	 */
+	TASK_BATCH_CREATED
 }

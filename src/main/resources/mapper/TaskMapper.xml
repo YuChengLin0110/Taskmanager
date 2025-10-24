@@ -66,5 +66,14 @@
 		DELETE FROM task WHERE id
 		= #{id} AND user_id = #{userId}
 	</delete>
+	
+	<insert id="batchInsertedForeach">
+	   INSERT INTO task (title, description, status,
+        created_Time, updated_Time, user_id)
+        VALUES
+        <foreach collection="list" item="t" separator=",">
+        (#{t.title}, #{t.description}, #{t.status}, #{t.createdTime}, #{t.updatedTime}, #{t.userId})
+	    </foreach>
+	</insert>
 
 </mapper>

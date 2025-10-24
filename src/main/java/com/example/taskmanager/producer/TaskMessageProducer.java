@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.example.taskmanager.entity.IOutbox;
 import com.example.taskmanager.entity.OutboxEvent;
 import com.example.taskmanager.entity.enums.EventTypeEnum;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -38,6 +39,9 @@ public class TaskMessageProducer {
 	
 	@Value("${rabbitmq.routingkey.task.overdue}")
 	private String taskOverdueRoutingKey;
+	
+	@Value("${rabbitmq.routingkey.task.batch.created}")
+	private String taskBatchCreatedRoutingKey;
 
 	@Autowired
 	public TaskMessageProducer(AmqpTemplate amqpTemplate, ObjectMapper objectMapper) {
@@ -45,7 +49,7 @@ public class TaskMessageProducer {
 		this.objectMapper = objectMapper;
 	}
 
-	public void send(OutboxEvent event) {
+	public void send(IOutbox event) {
 		String routingKey = getTaskRoutingKey(event);
 		
 		try {
@@ -67,12 +71,13 @@ public class TaskMessageProducer {
 		}
 	}
 
-	private String getTaskRoutingKey(OutboxEvent event) {
+	private String getTaskRoutingKey(IOutbox  event) {
 		EventTypeEnum type = event.getEventType();
 		return switch (type) {
 		case TASK_CREATED -> taskCreatedRoutingKey;
 		case TASK_ASSIGNED -> taskAssignedRoutingKey; 
 		case TASK_OVERDUE -> taskOverdueRoutingKey;
+		case TASK_BATCH_CREATED -> taskBatchCreatedRoutingKey;
 		default -> throw new IllegalArgumentException("Unsupported event type: " + event.getEventType());
 		};
 	}

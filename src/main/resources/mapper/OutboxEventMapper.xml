@@ -46,5 +46,16 @@
 		status = 'DEAD'
 		WHERE id = #{id}
 	</update>
+	
+	<insert id="batchInsertForeach">
+	INSERT INTO outbox_event
+        (event_type, payload, status,
+        create_time, entity_id)
+        VALUES
+        <foreach collection="list" item="e" separator=",">
+        (#{e.eventType}, #{e.payload}, #{e.status},
+        #{e.createTime}, #{e.entityId})
+        </foreach>
+	</insert>
 
 </mapper>
