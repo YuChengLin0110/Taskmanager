@@ -1,6 +1,6 @@
 # TaskManager
 
-基於 Spring Boot 的事件驅動任務系統，整合 JWT 驗證、通知機制、分散式鎖、RabbitMQ、Redis、Spring Cloud Config 、主從資料庫讀寫分離等，並透過 Docker 容器化
+基於 Spring Boot 的事件驅動任務系統，整合 JWT 驗證、通知機制、分散式鎖、RabbitMQ、Redis、Spring Cloud Config 、批量操作 DB、主從資料庫讀寫分離等，並透過 Docker 容器化
 
 ## 簡易流程圖
 ![image](others/簡易流程圖.jpg)
@@ -13,7 +13,8 @@
 - **主從資料庫架構**：讀寫分離配置，降低主庫壓力，使用 AOP 控制
 - **Spring Cloud Config**：集中管理系統設定
 - **操作紀錄與異常日誌 AOP**：自動記錄用戶操作與錯誤紀錄
-- **通知通道彈性切換：支援 Kafka 與 Spring Boot 內建的 Publisher
+- **通知通道彈性切換**：支援 Kafka 與 Spting Boot 內建的 Publisher
+- **批量建立任務**：一次性處理多筆任務資料，減少資料庫存取次數，提高效能
 
 ## 設計模式
 
@@ -35,12 +36,15 @@
   監聽端則使用 @EventListener 標註的方法來接收事件
   當任務建立等事件發生時，所有註冊的監聽器會被自動通知
 
+## 批量操作 Batch Operations
+批量插入任務：使用 MyBatis 的批次處理功能，手動控制 SqlSession 將多筆任務資料一次性寫入資料庫，減少資料庫存取次數，提高效能
+
 ## 資料庫讀寫分離
 由自定義的 `DataSourceAspect` 以 @Annotation 切換資料源  
 - `master`：寫入操作
 - `slave`：讀取操作
 
-## 彈性組件管理Conditional Bean Registration
+## 彈性組件管理 Conditional Bean Registration
 專案透過 Spring Boot 提供的 @ConditionalOnProperty 注解，根據設定檔動態註冊不同的通知發佈實作，實現彈性組件切換
 - `notification.mode=kafka`：啟用 KafkaNotificationPublisher，透過 Kafka Topic 發送通知，由 Kafka 消費者負責後續處理
 - `notification.mode=default`（或未設定）：使用 Spring Boot 內建 Publisher，直接發送 Email、Slack 等通知
